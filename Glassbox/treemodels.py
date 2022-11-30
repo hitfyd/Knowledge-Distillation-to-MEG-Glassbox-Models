@@ -2,7 +2,10 @@ import time
 
 from sklearn import tree
 from sklearn.model_selection import train_test_split
-from interpret.glassbox import ClassificationTree, DecisionListClassifier
+from interpret.glassbox import ClassificationTree, DecisionListClassifier, LogisticRegression, \
+    ExplainableBoostingClassifier
+from mne.decoding import UnsupervisedSpatialFilter
+from sklearn.decomposition import PCA
 
 from ExperimentRecord import get_project_path
 from TorchUtil import get_data_labels_from_dataset
@@ -10,12 +13,17 @@ from TorchUtil import get_data_labels_from_dataset
 RAND_SEED = 16
 validate_rate = 0.1
 dataset = 'CamCAN'
+channels = 51
 # 根据数据集名称读取预设数据集，分为训练集和测试集
 assert dataset == 'CamCAN' or dataset == 'DecMeg2014'
 train_path = get_project_path() + '/dataset/{}_train.npz'.format(dataset)
 test_path = get_project_path() + '/dataset/{}_test.npz'.format(dataset)
 train_data, train_labels = get_data_labels_from_dataset(train_path)
 test_data, test_labels = get_data_labels_from_dataset(test_path)
+
+pca_filter = UnsupervisedSpatialFilter(PCA(channels), average=False)
+train_data = pca_filter.fit_transform(train_data)
+test_data = pca_filter.transform(test_data)
 
 train_data, test_data = train_data.reshape(len(train_labels), -1), test_data.reshape(len(test_labels), -1)
 
@@ -29,8 +37,10 @@ time_start = time.perf_counter()
 # clf = tree.DecisionTreeClassifier(max_depth=6)
 # clf = clf.fit(train_data, train_labels)
 
-clf = DecisionListClassifier(random_state=RAND_SEED)
-# clf = ClassificationTree(max_depth=10, random_state=RAND_SEED)
+# clf = ExplainableBoostingClassifier(random_state=RAND_SEED)
+# clf = LogisticRegression(max_iter=20000, random_state=RAND_SEED)
+clf = DecisionListClassifier(random_state=RAND_SEED)  # 效果最差
+# clf = ClassificationTree(max_depth=15, random_state=RAND_SEED)
 clf.fit(train_data, train_labels)
 
 time_end = time.perf_counter()  # 记录结束时间
