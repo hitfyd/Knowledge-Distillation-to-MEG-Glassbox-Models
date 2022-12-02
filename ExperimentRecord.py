@@ -17,10 +17,10 @@ def create_dir(dir_path):
 
 
 # 定义模型存储路径和运行记录存储路径
-# checkpoint_dir = get_project_path() + '/checkpoint/'
-# record_dir = get_project_path() + '/record/'
-# create_dir(checkpoint_dir)
-# create_dir(record_dir)
+checkpoint_dir = get_project_path() + '/checkpoint/'
+record_dir = get_project_path() + '/record/'
+create_dir(checkpoint_dir)
+create_dir(record_dir)
 
 
 class ExperimentRecord(object):
