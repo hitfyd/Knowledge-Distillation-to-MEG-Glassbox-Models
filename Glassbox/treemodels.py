@@ -13,10 +13,12 @@ from TorchUtil import get_data_labels_from_dataset
 
 RAND_SEED = 16
 n_jobs = -1
-dataset = 'CamCAN'  # 'DecMeg2014':
+dataset = 'CamCAN'  # 'CamCAN' 'DecMeg2014'
 all_channels = 204
-channels_list = [12, 25, 51, 102, 204]
-model_list = ['EBM', 'linear', 'tree', 'rule']  # 'EBM', 'linear', 'tree', 'rule'
+channels_list = [12, 25, 51, 204]
+if dataset == 'DecMeg2014':
+    channels_list = [25, 51]
+model_list = ['tree', 'rule', 'linear', 'EBM']  # 'tree', 'rule', 'linear', 'EBM'
 # 根据数据集名称读取预设数据集，分为训练集和测试集
 assert dataset == 'CamCAN' or dataset == 'DecMeg2014'
 train_path = get_project_path() + '/dataset/{}_train.npz'.format(dataset)
