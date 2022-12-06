@@ -15,17 +15,25 @@ RAND_SEED = 16
 n_jobs = -1
 dataset = 'CamCAN'  # 'CamCAN' 'DecMeg2014'
 all_channels = 204
-channels_list = [12, 25, 51, 204]
-if dataset == 'DecMeg2014':
-    channels_list = [25, 51]
+all_times = 100
+channels_list = [12, 25, 51, 102, all_channels]
+time_interval = range(0, all_times)
+# if dataset == 'DecMeg2014':
+#     channels_list = [25, 51]
 model_list = ['tree', 'rule', 'linear', 'EBM']  # 'tree', 'rule', 'linear', 'EBM'
+config = [RAND_SEED, n_jobs, dataset, all_channels, all_times,
+          channels_list, time_interval, model_list]
+
 # 根据数据集名称读取预设数据集，分为训练集和测试集
 assert dataset == 'CamCAN' or dataset == 'DecMeg2014'
 train_path = get_project_path() + '/dataset/{}_train.npz'.format(dataset)
 test_path = get_project_path() + '/dataset/{}_test.npz'.format(dataset)
 origin_train_data, train_labels = get_data_labels_from_dataset(train_path)
 origin_test_data, test_labels = get_data_labels_from_dataset(test_path)
-
+# 测试更短的时域区间
+if dataset == 'CamCAN':
+    origin_train_data = origin_train_data[:, :, time_interval]
+    origin_test_data = origin_test_data[:, :, time_interval]
 
 def predict_tree(model, data, labels):
     predict_labels = model.predict(data)
@@ -38,7 +46,7 @@ def predict_tree(model, data, labels):
 
 
 record = ExperimentRecord()
-record.append([RAND_SEED, n_jobs, dataset, channels_list, model_list])
+record.append(config)
 
 for channels in channels_list:
     if channels < all_channels:
@@ -60,9 +68,9 @@ for channels in channels_list:
             clf = DecisionListClassifier(random_state=RAND_SEED, n_jobs=n_jobs)  # 效果最差
         else:
             clf = ExplainableBoostingClassifier(random_state=RAND_SEED, n_jobs=n_jobs)
-            # # 未降维时EBM模型内存占用过大，无法执行，因此跳过
-            # if channels == all_channels:
-            #     continue
+            # 未降维时EBM模型内存占用过大，无法执行，因此跳过
+            if channels in [102, all_channels]:
+                continue
         time_start = time.perf_counter()
         clf.fit(train_data, train_labels)
         time_end = time.perf_counter()  # 记录结束时间
@@ -72,10 +80,10 @@ for channels in channels_list:
         test_accuracy = predict_tree(clf, test_data, test_labels)
 
         record.append([channels, model_name, run_time, train_accuracy, test_accuracy])
-        checkpoint_name = '{}{}/{}_{}_{}_{}_checkpoint.pt'.format(checkpoint_dir, record.run_py_name,
-                                                                  dataset, channels, model_name, record.time)
-        os.makedirs(os.path.dirname(checkpoint_name), exist_ok=True)
-        dump(clf, checkpoint_name)
-        print(channels, model_name)
-        model_name = load(checkpoint_name)
-        print(predict_tree(model_name, test_data, test_labels))
+        # checkpoint_name = '{}{}/{}_{}_{}_{}_checkpoint.pt'.format(checkpoint_dir, record.run_py_name,
+        #                                                           dataset, channels, model_name, record.time)
+        # os.makedirs(os.path.dirname(checkpoint_name), exist_ok=True)
+        # dump(clf, checkpoint_name)
+        # print(channels, model_name)
+        # model_name = load(checkpoint_name)
+        # print(predict_tree(model_name, test_data, test_labels))
