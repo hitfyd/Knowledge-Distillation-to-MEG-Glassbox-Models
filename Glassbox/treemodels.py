@@ -76,8 +76,8 @@ for channels in channels_list:
         time_end = time.perf_counter()  # 记录结束时间
         run_time = time_end - time_start  # 计算的时间差为程序的执行时间，单位为秒/s
 
-        train_accuracy = predict_tree(clf, train_data, train_labels)
-        test_accuracy = predict_tree(clf, test_data, test_labels)
+        train_accuracy = clf.score(train_data, train_labels)
+        test_accuracy = clf.score(test_data, test_labels)
 
         record.append([channels, model_name, run_time, train_accuracy, test_accuracy])
         # checkpoint_name = '{}{}/{}_{}_{}_{}_checkpoint.pt'.format(checkpoint_dir, record.run_py_name,
