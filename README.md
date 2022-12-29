@@ -9,7 +9,7 @@
 In the conde environment, do the following:
 
 ```
-conda create -n <environment name> python=3.9
+conda create -n <environment name> python=3.10
 conda activate <environment name>
 pip install interpret
 pip install torch torchvision torchaudio
