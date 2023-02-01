@@ -1,5 +1,5 @@
 """Training and evaluating a soft decision tree on the MNIST dataset."""
-
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     test_data, test_labels = get_data_labels_from_dataset(test_path)
 
     # 固定随机数种子
-    setup_seed(0)
+    setup_seed(1)
     # 设置运算硬件
     set_device(-1)
 
@@ -41,18 +41,22 @@ if __name__ == "__main__":
     restore_baseline_checkpoint(model, get_project_path() + '/checkpoint/Models_Train/', dataset,
                                 baseline_checkpoint)
     transfer_labels, _ = predict(model, tensor(train_data))
+    # T = 1
+    # for i in range(len(transfer_labels)):
+    #     exp_sum = np.exp(transfer_labels[i][0] / T) + np.exp(transfer_labels[i][1] / T)
+    #     transfer_labels[i] = [np.exp(transfer_labels[i][0] / T) / exp_sum, np.exp(transfer_labels[i][1] / T) / exp_sum]
 
     # Parameters
-    input_dim = 204 * 100    # the number of input dimensions
-    output_dim = 2        # the number of outputs (i.e., # classes on MNIST)
-    depth = 5              # tree depth
-    lamda = 1e-3           # coefficient of the regularization term
-    lr = 1e-3              # learning rate
-    weight_decaly = 5e-4   # weight decay
-    batch_size = 256       # batch size
-    epochs = 20            # the number of training epochs
-    log_interval = 100     # the number of batches to wait before printing logs
-    use_cuda = False       # whether to use GPU
+    input_dim = 204 * 100  # the number of input dimensions
+    output_dim = 2  # the number of outputs (i.e., # classes on MNIST)
+    depth = 10  # tree depth
+    lamda = 1e-3  # coefficient of the regularization term
+    lr = 1e-3  # learning rate
+    weight_decaly = 5e-4  # weight decay
+    batch_size = 256  # batch size
+    epochs = 50  # the number of training epochs
+    log_interval = 100  # the number of batches to wait before printing logs
+    use_cuda = False  # whether to use GPU
     soft = True
 
     # Model and Optimizer
@@ -97,7 +101,6 @@ if __name__ == "__main__":
         )
     )
 
-
     for epoch in range(epochs):
 
         # Training
@@ -140,7 +143,6 @@ if __name__ == "__main__":
         correct = 0.
 
         for batch_idx, (data, target) in enumerate(test_loader):
-
             batch_size = data.size()[0]
             data, target = data.to(device), target.to(device)
 
