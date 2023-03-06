@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 
-from SDT import SDT
+from SoftDecisionTree import SDT
 
 
 def onehot_coding(target, device, output_dim):

@@ -1,3 +1,5 @@
+# 验证将软标签迁移到降维方法是否有增益
+
 import numpy as np
 import torch
 from sklearn.model_selection import train_test_split

@@ -11,15 +11,13 @@ In the conde environment, do the following:
 ```
 conda create -n <environment name> python=3.10
 conda activate <environment name>
-pip install interpret
-pip install torch torchvision torchaudio
-pip install mne
+conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
 ```
 
 Major dependency packages:
 
 ```
-python==3.9.15
+python==3.11.15
 interpret==0.3.0
 torch==1.13.0
 scikit-learn==1.1.3

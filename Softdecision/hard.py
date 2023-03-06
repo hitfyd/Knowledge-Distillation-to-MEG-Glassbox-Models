@@ -8,7 +8,7 @@ from torchvision import datasets, transforms
 
 from Classifier import init_global_network_parameters, LFCNN
 from ExperimentRecord import get_project_path
-from SDT import SDT
+from SoftDecisionTree import SDT
 from TorchUtil import get_data_labels_from_dataset, get_data_loader, set_device, restore_baseline_checkpoint, predict, \
     setup_seed
 

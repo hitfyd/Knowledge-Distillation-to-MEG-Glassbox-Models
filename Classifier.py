@@ -2,14 +2,9 @@ from collections import OrderedDict
 
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
-
-# from braindecode.models import EEGNetv4, TIDNet
 
 # global network parameters
 # CamCAN data parameters
-from torchvision.models import AlexNet
-
 global_channels = 204
 global_points = 100
 global_classes = 2
@@ -52,10 +47,6 @@ def init_global_network_parameters(channels=204, points=100, classes=2,
 # 初始化基准模型
 def init_models():
     lfcnn, varcnn, hgrn = LFCNN(), VARCNN(), HGRN()
-    # eegnet = EEGNetv4(in_chans=global_channels, n_classes=global_classes, input_window_samples=global_points)
-    # tidnet = TIDNet(in_chans=global_channels, n_classes=global_classes, input_window_samples=global_points)
-    # alexnet = MEGAlexNet()
-    # lenet5 = LeNet5()
     return [lfcnn, varcnn, hgrn]
 
 
@@ -175,42 +166,3 @@ class HGRN(nn.Module):
         out = self.output(x)
         out = self.softmax(out)
         return out
-
-
-class MEGAlexNet(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.alexnet = AlexNet(num_classes=global_classes)
-
-    def forward(self, x):
-        x = x.unsqueeze(dim=1)
-        x = x.repeat(1, 3, 1, 1)
-        x = self.alexnet(x)
-        return x
-
-
-class LeNet5(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 6, 5, padding=2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(18032, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 2)
-
-    def forward(self, x):
-        x = x.unsqueeze(dim=1)
-        x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
-        x = F.max_pool2d(F.relu(self.conv2(x)), (2, 2))
-        x = x.view(-1, self.num_flat_features(x))
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
-
-    def num_flat_features(self, x):
-        size = x.size()[1:]
-        num_features = 1
-        for s in size:
-            num_features *= s
-        return num_features
