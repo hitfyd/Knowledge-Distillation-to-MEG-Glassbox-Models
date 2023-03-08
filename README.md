@@ -17,13 +17,8 @@ conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvi
 Major dependency packages:
 
 ```
-python==3.11.15
-interpret==0.3.0
-torch==1.13.0
-scikit-learn==1.1.3
-shap==0.41.0
-skope-rules==1.0.1
-mne==1.2.2
+python==3.10.9
+pytorch==1.13.1
 ```
 
 ### Benchmark Models Evaluation
