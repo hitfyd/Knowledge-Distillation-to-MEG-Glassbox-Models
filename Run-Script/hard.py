@@ -4,15 +4,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import tensor
 
-from Classifier import init_global_network_parameters, LFCNN
-from ExperimentRecord import get_project_path
-from SoftDecisionTree import SDT
-from TorchUtil import get_data_labels_from_dataset, get_data_loader, set_device, restore_baseline_checkpoint, predict, \
-    setup_seed
+from Util.Classifier import init_global_network_parameters, LFCNN, VARCNN, HGRN
+from Util.ExperimentRecord import get_project_path
+from Util.SoftDecisionTree import SDT
+from Util.TorchUtil import get_data_labels_from_dataset, get_data_loader, set_device, restore_baseline_checkpoint, \
+    predict, setup_seed
 
 if __name__ == "__main__":
     # Load data
-    dataset = 'CamCAN'
+    dataset, channels, points, classes = 'MentalImagery', 204, 500, 4  # 'CamCAN', 204, 100, 2  'DecMeg2014', 204, 250, 2
 
     train_path = get_project_path() + '/dataset/{}_train.npz'.format(dataset)
     test_path = get_project_path() + '/dataset/{}_test.npz'.format(dataset)
@@ -24,33 +24,33 @@ if __name__ == "__main__":
     # 设置运算硬件
     set_device(0)
 
-    # 初始化模型
-    init_global_network_parameters(channels=204, points=100, classes=2)
-    model = LFCNN()
-    baseline_checkpoint = 20220616160458  # DecMeg2014：20220616192753     CamCAN：20220616160458
-    restore_baseline_checkpoint(model, get_project_path() + '/checkpoint/Models_Train/', dataset,
-                                baseline_checkpoint)
+    # # 初始化模型
+    # init_global_network_parameters(channels=channels, points=points, classes=classes)
+    # model = HGRN()     # LFCNN(), VARCNN(), HGRN()
+    # baseline_checkpoint = 20220616192753  # DecMeg2014：20220616192753     CamCAN：20220616160458
+    # restore_baseline_checkpoint(model, get_project_path() + '/checkpoint/Models_Train/', dataset, baseline_checkpoint)
+    #
+    # # model = torch.compile(model)
+    #
+    # transfer_labels, _ = predict(model, tensor(train_data))
 
-    # model = torch.compile(model)
-
-    transfer_labels, _ = predict(model, tensor(train_data))
     # T = 1
     # for i in range(len(transfer_labels)):
     #     exp_sum = np.exp(transfer_labels[i][0] / T) + np.exp(transfer_labels[i][1] / T)
     #     transfer_labels[i] = [np.exp(transfer_labels[i][0] / T) / exp_sum, np.exp(transfer_labels[i][1] / T) / exp_sum]
 
     # Parameters
-    input_dim = 204 * 100  # the number of input dimensions
-    output_dim = 2  # the number of outputs (i.e., # classes on MNIST)
-    depth = 12  # tree depth
+    input_dim = channels * points  # the number of input dimensions
+    output_dim = classes  # the number of outputs (i.e., # classes on MNIST)
+    depth = 4  # tree depth
     lamda = 1e-3  # coefficient of the regularization term
     lr = 1e-3  # learning rate
     weight_decaly = 5e-4  # weight decay
     batch_size = 1024  # batch size
-    epochs = 50  # the number of training epochs
-    log_interval = 10  # the number of batches to wait before printing logs
+    epochs = 200  # the number of training epochs
+    log_interval = 5  # the number of batches to wait before printing logs
     use_cuda = True  # whether to use GPU
-    soft = True
+    soft = False
 
     # Model and Optimizer
     tree = SDT(input_dim, output_dim, depth, lamda, use_cuda)
@@ -71,28 +71,28 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    correct = 0
-    for batch_idx, (data, target) in enumerate(test_loader):
-        batch_size = data.size()[0]
-        data, target = data.to(device), target.to(device)
-
-        output = F.softmax(model.forward(data), dim=1)
-
-        pred = output.data.max(1)[1]
-        correct += pred.eq(target.view(-1).data).sum()
-
-    accuracy = 100.0 * float(correct) / len(test_loader.dataset)
-
-    msg = (
-        "\nTesting Accuracy: {}/{} ({:.3f}%) |"
-    )
-    print(
-        msg.format(
-            correct,
-            len(test_loader.dataset),
-            accuracy,
-        )
-    )
+    # correct = 0
+    # for batch_idx, (data, target) in enumerate(test_loader):
+    #     batch_size = data.size()[0]
+    #     data, target = data.to(device), target.to(device)
+    #
+    #     output = F.softmax(model.forward(data), dim=1)
+    #
+    #     pred = output.data.max(1)[1]
+    #     correct += pred.eq(target.view(-1).data).sum()
+    #
+    # accuracy = 100.0 * float(correct) / len(test_loader.dataset)
+    #
+    # msg = (
+    #     "\nTesting Accuracy: {}/{} ({:.3f}%) |"
+    # )
+    # print(
+    #     msg.format(
+    #         correct,
+    #         len(test_loader.dataset),
+    #         accuracy,
+    #     )
+    # )
 
     # tree = torch.compile(tree)
     #

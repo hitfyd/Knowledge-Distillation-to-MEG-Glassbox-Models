@@ -55,7 +55,7 @@ def get_labels_info(labels):
 # 配置Pytorch批处理数据集
 def get_data_loader(data, label, batch_size=256, shuffle=True):
     assert isinstance(data, np.ndarray) and isinstance(label, np.ndarray) and len(data) == len(label)
-    assert data.dtype == np.float32 and label.dtype == np.longlong
+    assert data.dtype == np.float32 #and label.dtype == np.longlong
     dataset = torch.utils.data.TensorDataset(torch.from_numpy(data), torch.from_numpy(label))
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
     return dataloader

@@ -266,3 +266,5 @@ plot/
 checkpoint/
 dataset/
 
+/kd/tools/wandb/
+/kd/tools/output/

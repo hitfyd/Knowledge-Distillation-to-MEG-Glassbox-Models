@@ -18,7 +18,7 @@ Major dependency packages:
 
 ```
 python==3.10.9
-pytorch==1.13.1
+pytorch==2.0.0
 ```
 
 ### Benchmark Models Evaluation

@@ -131,3 +131,58 @@ def preprocess_CamCAN_subjects(npz_files, vision_combline=True):
     data = np.nan_to_num(data / data.std(0))
 
     return data, labels
+
+
+#Class 0: Both Hand Imagery, Class 1: Both Feet Imagery, Class 2: Word generation Imagery, Class 3: Subtraction Imagery
+#Their associated triggers in the STIM channels are 4, 8, 16, and 32
+def preprocess_MentalImagery_subjects(npz_files):
+    assert isinstance(npz_files, str) or isinstance(npz_files, list)
+    if isinstance(npz_files, str):
+        npz_files = [npz_files]
+    assert len(npz_files) > 0
+
+    data, labels = [], []
+    # 读取剩余npz
+    for npz_file in npz_files:
+        npz = np.load(npz_file)
+        npz_data = npz['data']
+        npz_labels = npz['labels']
+        print("subject_name:", get_subject_name(npz_file))
+        print("npz_data:", npz_data.shape)
+        print("npz_labels:", npz_labels.shape)
+
+        data.append(npz_data)
+        labels.append(npz_labels)
+
+    data = np.vstack(data)
+    labels = np.concatenate(labels)
+    print("Dataset summary:")
+    print("data:", data.shape)
+    print("labels:", labels.shape)
+
+    assert data.dtype == np.float32 and labels.dtype == np.longlong
+
+    # 重置标签
+    for i in range(labels.size):
+        if labels[i] == 4:
+            labels[i] = 0
+        elif labels[i] == 8:
+            labels[i] = 1
+        elif labels[i] == 16:
+            labels[i] = 2
+        else:
+            labels[i] = 3
+
+    # # 只保留Both Hand Imagery和Word generation Imagery
+    # retain_index = (labels == 0) + (labels == 2)
+    # data = data[retain_index]
+    # labels = labels[retain_index]
+    # for i in range(labels.size):
+    #     if labels[i] == 2:
+    #         labels[i] = 1
+
+    # 对每一个样本进行Z-Score标准化
+    data -= data.mean(0)
+    data = np.nan_to_num(data / data.std(0))
+
+    return data, labels
