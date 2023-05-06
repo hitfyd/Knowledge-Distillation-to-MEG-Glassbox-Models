@@ -1,7 +1,8 @@
-# 将CamCAN数据集中的visual-audio passive任务数据进行预处理，每个subject的每一个session的epoch单独存储为一个.npz文件
-# 预处理流程：带通滤波[1, 45]Hz，时间区间为[0.5, 3.5]s，取梯度计数据，1/8降采样
+# 将MentalImagery数据集中的2中MI任务、2种CI任务数据进行预处理，每个subject的每一个session的epoch单独存储为一个.npz文件
+# 预处理流程：带通滤波[8, 30]Hz，时间区间为[0.5, 3.5]s，取梯度计数据，1/8降采样
 # Reference：
 # [1] D. Rathee, H. Raza, S. Roy, and G. Prasad, “A magnetoencephalography dataset for motor and cognitive imagery-based brain-computer interface,” Sci Data, vol. 8, no. 1, Art. no. 1, Apr. 2021, doi: 10.1038/s41597-021-00899-7.
+# [2] https://springernature.figshare.com/collections/A_magnetoencephalography_dataset_for_motor_and_cognitive_imagery_BCI/5101544/1
 
 import mne
 import os
@@ -13,16 +14,16 @@ import traceback
 # MEG RAW 预处理参数
 freq_min = 8.
 freq_max = 30.
-t_min = -0.5
+t_min = 0.5
 t_max = 3.5
 ch_type = 'grad'
 decimate = 8
 
 # MEG源文件路径、epochs存储路径
-data_path = 'C:/MEG_BIDS/'
+data_path = 'D:/MEG_BIDS/'
 meg_format = 'sub-*/ses-*/meg/sub-*_ses-*_task-bcimici_meg.fif'
 # Epochs存储路径
-save_path = 'C:/MentalImagery/'
+save_path = 'D:/MentalImagery/'
 if not os.path.exists(save_path):
     os.mkdir(save_path)
 
@@ -50,7 +51,7 @@ def raw2epochs(meg_raw_filename, cover=False):
         # 选择所有梯度计
         picks = mne.pick_types(raw.info, meg=ch_type)
         # 提取epochs，设置降采样，拒绝阈值
-        epochs = mne.epochs.Epochs(raw, events, tmin=t_min, tmax=t_max, decim=decimate, baseline=(None, 0.),
+        epochs = mne.epochs.Epochs(raw, events, tmin=t_min, tmax=t_max, decim=decimate, baseline=(None, None),
                                    detrend=1, preload=True, picks=picks, reject=None)
         # 平衡样本标签数量
         epochs.equalize_event_counts()
@@ -62,11 +63,9 @@ def raw2epochs(meg_raw_filename, cover=False):
         labels = labels.astype(np.longlong)
         # 部分编号存在偏移，需要统一为4, 8, 16, and 32
         if 5 in labels:
-            # labels = labels-1
-            return
+            labels = labels-1
         if 6 in labels:
-            # labels = labels - 2
-            return
+            labels = labels - 2
 
         npz_name = save_path + sub_ses_id_name + '_epochs-' + str(len(labels)) + '.npz'
         np.savez(npz_name, data=data, labels=labels)

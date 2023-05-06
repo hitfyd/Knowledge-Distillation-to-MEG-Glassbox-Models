@@ -1,4 +1,5 @@
-# 划分方式为前200个受试者为训练集，在训练时进一步按照9：1的比例划分为训练集和验证集，201-250个受试者为测试集
+# 17个subjects，每个subject有2个sessions，共34个sessions
+# 划分方式为前28个sessions（14个subjects）为训练集，在训练时进一步按照9：1的比例划分为训练集和验证集，后6个sessions（3个受试者）为测试集
 # 对每个样本分别进行Z-Score标准化
 import os
 from glob import glob
@@ -9,8 +10,8 @@ from DataUtil import preprocess_MentalImagery_subjects
 
 # 数据集名称
 dataset = 'MentalImagery'
-# CamCAN经过预处理后的Epochs数据
-epochs_path = 'C:/MentalImagery/'
+# CamCAN经过预处理后的Epochs数D据
+epochs_path = 'D:/MentalImagery/'
 npz_format = 'sub-*_ses-*_epochs-*.npz'
 # 划分好的数据集存储路径
 dataset_save_path = '../dataset/'

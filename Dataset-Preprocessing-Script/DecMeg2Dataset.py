@@ -1,7 +1,7 @@
 # 根据现有研究的留一法交叉验证实验结果，选择具有最佳表现的受试者4作为测试集，其余受试者1，2，3，5-16为训练集，并进一步按照9：1的比例划分为训练集和验证集
 # 0.1-20Hz的4阶巴沃斯特滤波
 # 按照采集设备和数据的结构，对其进行简单的通道筛选，只保留Grad通道类型的204通道
-# 对每个样本分别进行Z-Score标准化（对每个样本还是样本中对每个通道呢？）
+# 对样本进行Z-Score标准化
 #
 #     X : the 3D data matrix, trial x channel x time (580 x 306 x 375).
 #     y : the vector of the class labels (580), in the same order of the trials in X. The classes are 0 (Scramble) and 1 (Face).
@@ -11,6 +11,7 @@
 #
 # Reference：
 # [1] J. Li, J. Pan, F. Wang, and Z. Yu, “Inter-Subject MEG Decoding for Visual Information with Hybrid Gated Recurrent Network,” Appl. Sci.-Basel, vol. 11, no. 3, Art. no. 3, Jan. 2021, doi: 10.3390/app11031215.
+# [2] https://www.kaggle.com/c/decoding-the-human-brain/data
 
 import os
 

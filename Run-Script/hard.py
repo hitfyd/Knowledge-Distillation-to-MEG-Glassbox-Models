@@ -12,7 +12,7 @@ from Util.TorchUtil import get_data_labels_from_dataset, get_data_loader, set_de
 
 if __name__ == "__main__":
     # Load data
-    dataset, channels, points, classes = 'MentalImagery', 204, 500, 4  # 'CamCAN', 204, 100, 2  'DecMeg2014', 204, 250, 2
+    dataset, channels, points, classes = 'MentalImagery', 204, 375, 4  # 'CamCAN', 204, 100, 2  'DecMeg2014', 204, 250, 2
 
     train_path = get_project_path() + '/dataset/{}_train.npz'.format(dataset)
     test_path = get_project_path() + '/dataset/{}_test.npz'.format(dataset)
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # Parameters
     input_dim = channels * points  # the number of input dimensions
     output_dim = classes  # the number of outputs (i.e., # classes on MNIST)
-    depth = 4  # tree depth
+    depth = 8  # tree depth
     lamda = 1e-3  # coefficient of the regularization term
     lr = 1e-3  # learning rate
     weight_decaly = 5e-4  # weight decay

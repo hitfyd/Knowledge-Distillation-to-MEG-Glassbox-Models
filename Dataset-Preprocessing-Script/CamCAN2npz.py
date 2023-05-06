@@ -1,7 +1,9 @@
 # 将CamCAN数据集中的visual-audio passive任务数据进行预处理，每个subject的epoch单独存储为一个.npz文件
 # 预处理流程：带通滤波[1, 45]Hz，时间区间为[-0.296, 0.503]s，取梯度计数据，1/8降采样
 # Reference：
-# [1] I. Zubarev, R. Zetter, H.-L. Halme, and L. Parkkonen, “Adaptive neural network classifier for decoding MEG signals,” Neuroimage, vol. 197, pp. 425–434, Aug. 2019, doi: 10.1016/j.neuroimage.2019.04.068.
+# [1] J. R. Taylor et al., “The Cambridge Centre for Ageing and Neuroscience (Cam-CAN) data repository: Structural and functional MRI, MEG, and cognitive data from a cross-sectional adult lifespan sample,” NeuroImage, vol. 144, pp. 262–269, Jan. 2017, doi: 10.1016/j.neuroimage.2015.09.018.
+# [2] I. Zubarev, R. Zetter, H.-L. Halme, and L. Parkkonen, “Adaptive neural network classifier for decoding MEG signals,” Neuroimage, vol. 197, pp. 425–434, Aug. 2019, doi: 10.1016/j.neuroimage.2019.04.068.
+# [3] https://www.cam-can.com/
 
 import mne
 import os

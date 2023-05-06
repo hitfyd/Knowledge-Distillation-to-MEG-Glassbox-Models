@@ -2,7 +2,6 @@ import os
 
 from matplotlib import pyplot as plt
 
-
 def get_project_path():
     """得到项目路径"""
     package_path = os.path.dirname(__file__)
