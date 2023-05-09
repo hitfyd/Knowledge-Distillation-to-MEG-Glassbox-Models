@@ -118,7 +118,7 @@ class LFCNN(nn.Module):
     def forward(self, x):
         x = self.features(x)
         out = self.output(x)
-        return out, None
+        return out
 
 
 class VARCNN(nn.Module):

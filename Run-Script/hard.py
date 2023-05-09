@@ -6,13 +6,13 @@ from torch import tensor
 
 from Util.Classifier import init_global_network_parameters, LFCNN, VARCNN, HGRN
 from Util.ExperimentRecord import get_project_path
-from Util.SoftDecisionTree import SDT
 from Util.TorchUtil import get_data_labels_from_dataset, get_data_loader, set_device, restore_baseline_checkpoint, \
     predict, setup_seed
+from distilllib.models.SoftDecisionTree import SDT
 
 if __name__ == "__main__":
     # Load data
-    dataset, channels, points, classes = 'MentalImagery', 204, 375, 4  # 'CamCAN', 204, 100, 2  'DecMeg2014', 204, 250, 2
+    dataset, channels, points, classes = 'MentalImagery', 204, 375, 4  # 'CamCAN', 204, 100, 2  'DecMeg2014', 204, 250, 2  'MentalImagery', 204, 375, 4
 
     train_path = get_project_path() + '/dataset/{}_train.npz'.format(dataset)
     test_path = get_project_path() + '/dataset/{}_test.npz'.format(dataset)
@@ -42,13 +42,13 @@ if __name__ == "__main__":
     # Parameters
     input_dim = channels * points  # the number of input dimensions
     output_dim = classes  # the number of outputs (i.e., # classes on MNIST)
-    depth = 8  # tree depth
+    depth = 5  # tree depth
     lamda = 1e-3  # coefficient of the regularization term
-    lr = 1e-3  # learning rate
+    lr = 1e-4  # learning rate
     weight_decaly = 5e-4  # weight decay
     batch_size = 1024  # batch size
-    epochs = 200  # the number of training epochs
-    log_interval = 5  # the number of batches to wait before printing logs
+    epochs = 100  # the number of training epochs
+    log_interval = 10  # the number of batches to wait before printing logs
     use_cuda = True  # whether to use GPU
     soft = False
 

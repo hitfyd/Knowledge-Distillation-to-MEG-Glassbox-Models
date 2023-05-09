@@ -1,6 +1,6 @@
 import os
 
-from .Classifier import lfcnn
+from .DNNClassifier import lfcnn
 from .SoftDecisionTree import std5, std8
 
 

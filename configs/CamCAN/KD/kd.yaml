@@ -1,15 +1,15 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "dkd,lfcnn,std"
+  TAG: "kd,lfcnn,std"
   PROJECT: "CamCAN_baselines"
 DATASET:
   TYPE: "CamCAN"
 DISTILLER:
-  TYPE: "DKD"
+  TYPE: "KD"
   TEACHER: "lfcnn"
   STUDENT: "std5"
 SOLVER:
-  BATCH_SIZE: 64
+  BATCH_SIZE: 1024
   EPOCHS: 30
   LR: 0.003
   LR_DECAY_STAGES: [150, 180, 210]
@@ -17,4 +17,3 @@ SOLVER:
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
-

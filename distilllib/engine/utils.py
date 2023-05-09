@@ -27,7 +27,7 @@ class AverageMeter(object):
 
 
 def validate(val_loader, distiller):
-    batch_time, losses, top1, top5 = [AverageMeter() for _ in range(4)]
+    batch_time, losses, top1 = [AverageMeter() for _ in range(3)]
     criterion = nn.CrossEntropyLoss()
     num_iter = len(val_loader)
     pbar = tqdm(range(num_iter))
@@ -35,29 +35,27 @@ def validate(val_loader, distiller):
     distiller.eval()
     with torch.no_grad():
         start_time = time.time()
-        for idx, (image, target) in enumerate(val_loader):
-            image = image.float()
-            image = image.cuda(non_blocking=True)
+        for idx, (data, target) in enumerate(val_loader):
+            data = data.float()
+            data = data.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
-            output = distiller(image=image)
+            output = distiller(data=data)
             loss = criterion(output, target)
-            # acc1, acc5 = accuracy(output, target, topk=(1, 5))
-            acc1, acc5 = accuracy(output, target, topk=(1, 2))
-            batch_size = image.size(0)
+            acc1, _ = accuracy(output, target, topk=(1, 2))
+            batch_size = data.size(0)
             losses.update(loss.cpu().detach().numpy().mean(), batch_size)
             top1.update(acc1[0], batch_size)
-            top5.update(acc5[0], batch_size)
 
             # measure elapsed time
             batch_time.update(time.time() - start_time)
             start_time = time.time()
-            msg = "Top-1:{top1.avg:.3f}| Top-5:{top5.avg:.3f}".format(
-                top1=top1, top5=top5
+            msg = "Top-1:{top1.avg:.3f}".format(
+                top1=top1
             )
             pbar.set_description(log_msg(msg, "EVAL"))
             pbar.update()
     pbar.close()
-    return top1.avg, top5.avg, losses.avg
+    return top1.avg, losses.avg
 
 
 def log_msg(msg, mode="INFO"):
@@ -92,6 +90,31 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+
+
+def evaluate(origin_test_labels, pred_labels):
+    assert len(origin_test_labels) == len(pred_labels)
+    all_num = len(origin_test_labels)
+    # 统计TP（true positive，真正例，即把正例正确预测为正例）、FN（false negative，假负例，即把正例错误预测为负例）、
+    # FP（false positive，假正例，即把负例错误预测为正例）、TN（true negative，真负例，即把负例正确预测为负例）
+    tp, fn, fp, tn = 0, 0, 0, 0
+    for i in range(all_num):
+        if origin_test_labels[i] == pred_labels[i]:
+            if origin_test_labels[i] == 1:
+                tp += 1
+            else:
+                tn += 1
+        else:
+            if origin_test_labels[i] == 1:
+                fn += 1
+            else:
+                fp += 1
+    print('all: {}\ttp: {}\tfp: {}\tfn: {}\ttn:{}'.format(all_num, tp, fp, fn, tn))
+    accuracy = 1.0 * (tp + tn) / all_num
+    precision = 1.0 * tp / (tp + fp)
+    recall = 1.0 * tp / (tp + fn)
+    F1 = (2 * precision * recall) / (precision + recall)
+    return accuracy, precision, recall, F1, tp, fn, fp, tn
 
 
 def save_checkpoint(obj, path):

@@ -19,7 +19,7 @@ class SDT(nn.Module):
     lamda : float, default=1e-3
       The coefficient of the regularization term in the training loss. Please
       refer to the paper on the formulation of the regularization term.
-    use_cuda : bool, default=False
+    use_cuda : bool, default=True
       When set to `True`, use GPU to fit the model. Training a soft decision
       tree using CPU could be faster considering the inherent data forwarding
       process.
@@ -56,7 +56,7 @@ class SDT(nn.Module):
 
         self.depth = depth
         self.lamda = lamda
-        self.device = torch.device("cuda" if use_cuda else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu")
 
         self._validate_parameters()
 
@@ -88,7 +88,7 @@ class SDT(nn.Module):
         if is_training_data:
             return y_pred, _penalty
         else:
-            return y_pred, None
+            return y_pred
 
     def _forward(self, X):
         """Implementation on the data forwarding process."""

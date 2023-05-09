@@ -42,6 +42,12 @@ class BaseTrainer(object):
                 momentum=cfg.SOLVER.MOMENTUM,
                 weight_decay=cfg.SOLVER.WEIGHT_DECAY,
             )
+        elif cfg.SOLVER.TYPE == "Adam":
+            optimizer = optim.Adam(
+                self.distiller.module.get_learnable_parameters(),
+                lr=cfg.SOLVER.LR,
+                weight_decay=cfg.SOLVER.WEIGHT_DECAY,
+            )
         else:
             raise NotImplementedError(cfg.SOLVER.TYPE)
         return optimizer
@@ -95,21 +101,20 @@ class BaseTrainer(object):
             "data_time": AverageMeter(),
             "losses": AverageMeter(),
             "top1": AverageMeter(),
-            "top5": AverageMeter(),
         }
         num_iter = len(self.train_loader)
         pbar = tqdm(range(num_iter))
 
         # train loops
         self.distiller.train()
-        for idx, data in enumerate(self.train_loader):
-            msg = self.train_iter(data, epoch, train_meters)
+        for idx, (data, target) in enumerate(self.train_loader):
+            msg = self.train_iter(data, target, epoch, train_meters)
             pbar.set_description(log_msg(msg, "TRAIN"))
             pbar.update()
         pbar.close()
 
         # validate
-        test_acc, test_acc_top5, test_loss = validate(self.val_loader, self.distiller)
+        test_acc, test_loss = validate(self.val_loader, self.distiller)
 
         # log
         log_dict = OrderedDict(
@@ -117,7 +122,6 @@ class BaseTrainer(object):
                 "train_acc": train_meters["top1"].avg,
                 "train_loss": train_meters["losses"].avg,
                 "test_acc": test_acc,
-                "test_acc_top5": test_acc_top5,
                 "test_loss": test_loss,
             }
         )
@@ -149,24 +153,17 @@ class BaseTrainer(object):
                 student_state, os.path.join(self.log_path, "student_best")
             )
 
-    def train_iter(self, data, epoch, train_meters):
+    def train_iter(self, data, target, epoch, train_meters):
         self.optimizer.zero_grad()
         train_start_time = time.time()
-        # image, target, index = data
-        # train_meters["data_time"].update(time.time() - train_start_time)
-        # image = image.float()
-        # image = image.cuda(non_blocking=True)
-        # target = target.cuda(non_blocking=True)
-        # index = index.cuda(non_blocking=True)
 
-        image, target = data
         train_meters["data_time"].update(time.time() - train_start_time)
-        image = image.float()
-        image = image.cuda(non_blocking=True)
+        data = data.float()
+        data = data.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
 
         # forward
-        preds, losses_dict = self.distiller(image=image, target=target, epoch=epoch)
+        preds, losses_dict = self.distiller(data=data, target=target, epoch=epoch)
 
         # backward
         loss = sum([l.mean() for l in losses_dict.values()])
@@ -174,59 +171,17 @@ class BaseTrainer(object):
         self.optimizer.step()
         train_meters["training_time"].update(time.time() - train_start_time)
         # collect info
-        batch_size = image.size(0)
-        # acc1, acc5 = accuracy(preds, target, topk=(1, 5))
-        acc1, acc5 = accuracy(preds, target, topk=(1, 2))
+        batch_size = data.size(0)
+        acc1, _ = accuracy(preds, target, topk=(1, 2))
         train_meters["losses"].update(loss.cpu().detach().numpy().mean(), batch_size)
         train_meters["top1"].update(acc1[0], batch_size)
-        train_meters["top5"].update(acc5[0], batch_size)
         # print info
-        msg = "Epoch:{}| Time(data):{:.3f}| Time(train):{:.3f}| Loss:{:.4f}| Top-1:{:.3f}| Top-5:{:.3f}".format(
+        msg = "Epoch:{}| Time(data):{:.3f}| Time(train):{:.3f}| Loss:{:.4f}| Top-1:{:.3f}".format(
             epoch,
             train_meters["data_time"].avg,
             train_meters["training_time"].avg,
             train_meters["losses"].avg,
             train_meters["top1"].avg,
-            train_meters["top5"].avg,
         )
         return msg
 
-
-class CRDTrainer(BaseTrainer):
-    def train_iter(self, data, epoch, train_meters):
-        self.optimizer.zero_grad()
-        train_start_time = time.time()
-        image, target, index, contrastive_index = data
-        train_meters["data_time"].update(time.time() - train_start_time)
-        image = image.float()
-        image = image.cuda(non_blocking=True)
-        target = target.cuda(non_blocking=True)
-        index = index.cuda(non_blocking=True)
-        contrastive_index = contrastive_index.cuda(non_blocking=True)
-
-        # forward
-        preds, losses_dict = self.distiller(
-            image=image, target=target, index=index, contrastive_index=contrastive_index
-        )
-
-        # backward
-        loss = sum([l.mean() for l in losses_dict.values()])
-        loss.backward()
-        self.optimizer.step()
-        train_meters["training_time"].update(time.time() - train_start_time)
-        # collect info
-        batch_size = image.size(0)
-        acc1, acc5 = accuracy(preds, target, topk=(1, 5))
-        train_meters["losses"].update(loss.cpu().detach().numpy().mean(), batch_size)
-        train_meters["top1"].update(acc1[0], batch_size)
-        train_meters["top5"].update(acc5[0], batch_size)
-        # print info
-        msg = "Epoch:{}| Time(data):{:.3f}| Time(train):{:.3f}| Loss:{:.4f}| Top-1:{:.3f}| Top-5:{:.3f}".format(
-            epoch,
-            train_meters["data_time"].avg,
-            train_meters["training_time"].avg,
-            train_meters["losses"].avg,
-            train_meters["top1"].avg,
-            train_meters["top5"].avg,
-        )
-        return msg
