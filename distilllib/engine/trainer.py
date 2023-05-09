@@ -6,7 +6,6 @@ import torch.nn as nn
 import torch.optim as optim
 from collections import OrderedDict
 import getpass
-# from tensorboardX import SummaryWriter
 from .utils import (
     AverageMeter,
     accuracy,
@@ -53,11 +52,6 @@ class BaseTrainer(object):
         return optimizer
 
     def log(self, lr, epoch, log_dict):
-        # tensorboard log
-        # for k, v in log_dict.items():
-        #     self.tf_writer.add_scalar(k, v, epoch)
-        # self.tf_writer.flush()
-        # wandb log
         if self.cfg.LOG.WANDB:
             import wandb
 
@@ -72,7 +66,7 @@ class BaseTrainer(object):
             lines = [
                 "-" * 25 + os.linesep,
                 "epoch: {}".format(epoch) + os.linesep,
-                "lr: {:.2f}".format(float(lr)) + os.linesep,
+                "lr: {:.4f}".format(float(lr)) + os.linesep,
             ]
             for k, v in log_dict.items():
                 lines.append("{}: {:.2f}".format(k, v) + os.linesep)

@@ -25,7 +25,7 @@ global_gru_dropout = 0.1
 
 
 # init/reset global network parameters
-def init_global_network_parameters(channels=204, points=100, classes=2,
+def init_global_network_parameters(channels=204, points=100, num_classes=2,
                                    spatial_sources=32, conv_pool=2, conv_dropout=0.5, active_func=nn.ReLU(),
                                    gru1_hidden=100, gru2_hidden=10, gru_pool=5, gru_dropout=0.1):
     global global_channels, global_points, global_classes, \
@@ -33,7 +33,7 @@ def init_global_network_parameters(channels=204, points=100, classes=2,
         global_gru1_hidden, global_gru2_hidden, global_gru_pool, global_gru_dropout
     global_channels = channels
     global_points = points
-    global_classes = classes
+    global_classes = num_classes
     global_spatial_sources = spatial_sources
     global_conv_pool = conv_pool
     global_conv_dropout = conv_dropout
@@ -50,9 +50,19 @@ def init_models():
     return [lfcnn, varcnn, hgrn]
 
 
-def lfcnn(**kwargs):
-    init_global_network_parameters(channels=204, points=100, classes=2)
+def lfcnn(channels=204, points=100, num_classes=2, **kwargs):
+    init_global_network_parameters(channels=channels, points=points, num_classes=num_classes)
     return LFCNN()
+
+
+def varcnn(channels=204, points=100, num_classes=2, **kwargs):
+    init_global_network_parameters(channels=channels, points=points, num_classes=num_classes)
+    return VARCNN()
+
+
+def hgrn(channels=204, points=100, num_classes=2, **kwargs):
+    init_global_network_parameters(channels=channels, points=points, num_classes=num_classes)
+    return HGRN()
 
 
 # 转换非torch.nn类型操作，以适应Sequential

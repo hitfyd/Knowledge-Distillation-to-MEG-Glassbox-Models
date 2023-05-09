@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "dkd,lfcnn,std"
+  TAG: "dkd,hgrn,std"
   PROJECT: "CamCAN_baselines"
 DATASET:
   TYPE: "CamCAN"
@@ -9,7 +9,7 @@ DATASET:
   NUM_CLASSES: 2
 DISTILLER:
   TYPE: "DKD"
-  TEACHER: "CamCAN_lfcnn"
+  TEACHER: "CamCAN_hgrn"
   STUDENT: "std"
 SOLVER:
   BATCH_SIZE: 1024

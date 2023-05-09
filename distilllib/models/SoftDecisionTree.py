@@ -44,14 +44,15 @@ class SDT(nn.Module):
 
     def __init__(
             self,
-            input_dim,
+            channels,
+            points,
             num_classes,
             depth=5,
             lamda=1e-3,
             use_cuda=True):
         super(SDT, self).__init__()
 
-        self.input_dim = input_dim
+        self.input_dim = channels * points
         self.output_dim = num_classes
 
         self.depth = depth
@@ -171,9 +172,6 @@ class SDT(nn.Module):
             raise ValueError(msg.format(self.lamda))
 
 
-def std5(**kwargs):
-    return SDT(204 * 100, depth=5, **kwargs)
+def std(channels=204, points=100, num_classes=2, depth=5, lamda=1e-3, **kwargs):
+    return SDT(channels=channels, points=points, num_classes=num_classes, depth=depth, lamda=lamda, **kwargs)
 
-
-def std8(**kwargs):
-    return SDT(204 * 100, depth=8, **kwargs)

@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "dkd,lfcnn,std"
+  TAG: "kd,lfcnn,std"
   PROJECT: "CamCAN_baselines"
 DATASET:
   TYPE: "CamCAN"
@@ -8,7 +8,7 @@ DATASET:
   POINTS: 100
   NUM_CLASSES: 2
 DISTILLER:
-  TYPE: "DKD"
+  TYPE: "KD"
   TEACHER: "CamCAN_lfcnn"
   STUDENT: "std"
 SOLVER:
@@ -20,4 +20,3 @@ SOLVER:
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
-

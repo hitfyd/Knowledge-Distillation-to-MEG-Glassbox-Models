@@ -1,15 +1,15 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "dkd,lfcnn,std"
-  PROJECT: "CamCAN_baselines"
+  TAG: "vanilla,std"
+  PROJECT: "DecMeg2014_baselines"
 DATASET:
-  TYPE: "CamCAN"
+  TYPE: "DecMeg2014"
   CHANNELS: 204
-  POINTS: 100
+  POINTS: 250
   NUM_CLASSES: 2
 DISTILLER:
-  TYPE: "DKD"
-  TEACHER: "CamCAN_lfcnn"
+  TYPE: "NONE"
+  TEACHER: "DecMeg2014_lfcnn"
   STUDENT: "std"
 SOLVER:
   BATCH_SIZE: 1024
