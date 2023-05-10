@@ -5,12 +5,41 @@ import torch.nn.functional as F
 from ._base import Distiller
 
 
-def clkd_loss(logits_student, logits_teacher, temperature):
-    log_pred_student = F.log_softmax(logits_student / temperature, dim=1)
-    pred_teacher = F.softmax(logits_teacher / temperature, dim=1)
-    loss_kd = F.kl_div(log_pred_student, pred_teacher, reduction="none").sum(1).mean()
-    loss_kd *= temperature**2
-    return loss_kd
+def NMSE(input_data, target):
+    input_data = F.normalize(input_data, p=2)
+    target = F.normalize(target, p=2)
+    nmse_loss = F.mse_loss(input_data, target, reduction="mean")
+    return nmse_loss
+
+
+def ins_loss(logits_student, logits_teacher):
+    return NMSE(logits_student, logits_teacher)
+
+
+def cla_loss(logits_student, logits_teacher):
+    norm_T_logits_student = F.normalize(logits_student, p=2).T
+    norm_T_logits_teacher = F.normalize(logits_teacher, p=2).T
+    return NMSE(norm_T_logits_student, norm_T_logits_teacher)
+
+
+def cc_loss(logits_student, logits_teacher):
+    num_classes = logits_student.size(1)
+    # mean_logits_student = torch.mean(logits_student, dim=1)
+    # mean_logits_teacher = torch.mean(logits_teacher, dim=1)
+    # cc_logits_student, cc_logits_teacher = 0, 0
+    # for i in range(num_classes):
+    #     temp = logits_student[:, i] - mean_logits_student
+    #     temp_T = temp.view(1, -1)
+    #     cc_logits_student += temp_T * temp
+    #     cc_logits_teacher += (logits_teacher[:, i] - mean_logits_teacher) * (logits_teacher[:, i] - mean_logits_teacher).T
+    # cc_logits_student /= (num_classes-1)
+    # cc_logits_teacher /= (num_classes-1)
+    norm_logits_student = F.normalize(logits_student, p=2)
+    norm_logits_teacher = F.normalize(logits_teacher, p=2)
+    cc_logits_student = torch.matmul(norm_logits_student.T, norm_logits_student)
+    cc_logits_teacher = torch.matmul(norm_logits_teacher.T, norm_logits_teacher)
+    loss_cc = NMSE(cc_logits_student, cc_logits_teacher) / num_classes**2
+    return loss_cc
 
 
 class CLKD(Distiller):
@@ -18,9 +47,10 @@ class CLKD(Distiller):
 
     def __init__(self, student, teacher, cfg):
         super(CLKD, self).__init__(student, teacher)
-        self.temperature = cfg.CLKD.TEMPERATURE
         self.ce_loss_weight = cfg.CLKD.LOSS.CE_WEIGHT
         self.kd_loss_weight = cfg.CLKD.LOSS.KD_WEIGHT
+        self.cla_coefficient = cfg.CLKD.LOSS.CLA_COEFFICIENT
+        self.cc_loss_weight = cfg.CLKD.LOSS.CC_WEIGHT
 
     def forward_train(self, data, target, **kwargs):
         logits_student, penalty = self.student(data, is_training_data=True)
@@ -29,11 +59,12 @@ class CLKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_kd = self.kd_loss_weight * clkd_loss(
-            logits_student, logits_teacher, self.temperature
-        )
+        loss_kd = self.kd_loss_weight * (ins_loss(logits_student, logits_teacher) +
+                                         self.cla_coefficient * (cla_loss(logits_student, logits_teacher)))
+        loss_cc = self.cc_loss_weight * cc_loss(logits_student, logits_teacher)
         losses_dict = {
             "loss_ce": loss_ce,
             "loss_kd": loss_kd,
+            "loss_cc": loss_cc,
         }
         return logits_student, losses_dict

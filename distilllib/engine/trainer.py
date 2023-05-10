@@ -89,7 +89,8 @@ class BaseTrainer(object):
             writer.write("best_acc\t" + "{:.2f}".format(float(self.best_acc)))
 
     def train_epoch(self, epoch):
-        lr = adjust_learning_rate(epoch, self.cfg, self.optimizer)
+        # lr = adjust_learning_rate(epoch, self.cfg, self.optimizer)
+        lr = self.cfg.SOLVER.LR
         train_meters = {
             "training_time": AverageMeter(),
             "data_time": AverageMeter(),

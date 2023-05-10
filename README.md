@@ -11,16 +11,17 @@ In the conde environment, do the following:
 ```
 conda create -n <environment name> python=3.11
 conda activate <environment name>
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
 pip install mne
-pip install yacs wandb
+pip install yacs
+pip install wandb
 ```
 
 Major dependency packages:
 
 ```
 python==3.11.3
-torch==2.0.0
+torch==2.0.1
 mne==1.3.1
 yacs==0.1.8
 wandb==0.15.2
