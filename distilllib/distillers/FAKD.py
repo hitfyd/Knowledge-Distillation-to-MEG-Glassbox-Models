@@ -122,8 +122,8 @@ def sc_fakd_loss(data, num_classes, student, teacher):
         # if teacher.__class__.__name__ == 'HGRN':
         #     features_student = F.log_softmax(features_student)
         loss_fakd = NMSE(features_student, features_teacher)
-        if teacher.__class__.__name__ == 'HGRN':
-            loss_fakd /= 100
+        # if teacher.__class__.__name__ == 'HGRN':
+        #     loss_fakd /= 100
     return loss_fakd
 
 
@@ -143,7 +143,7 @@ class FAKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_kd = self.kd_loss_weight * sc_fakd_loss(data, self.num_classes, self.student, self.teacher)
+        loss_kd = self.kd_loss_weight * fakd_loss(data, self.num_classes, self.student, self.teacher)
         losses_dict = {
             "loss_ce": loss_ce,
             "loss_kd": loss_kd,
