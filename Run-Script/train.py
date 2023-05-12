@@ -1,4 +1,6 @@
 import os
+import sys
+import argparse
 
 import torch
 
@@ -78,8 +80,6 @@ def main(cfg, resume, opts):
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser("training for knowledge distillation.")
     parser.add_argument("--cfg", type=str, default="")
     parser.add_argument("--resume", action="store_true")
@@ -88,5 +88,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     cfg.merge_from_file(args.cfg)
     cfg.merge_from_list(args.opts)
+    # Debug模式下不上传wandb
+    isDebug = True if sys.gettrace() else False
+    cfg.LOG.WANDB = cfg.LOG.WANDB and not isDebug
     cfg.freeze()
+
     main(cfg, args.resume, args.opts)

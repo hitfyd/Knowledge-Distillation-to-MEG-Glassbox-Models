@@ -55,7 +55,7 @@ class BaseTrainer(object):
         if self.cfg.LOG.WANDB:
             import wandb
 
-            wandb.log({"current lr": lr})
+            # wandb.log({"current lr": lr})
             wandb.log(log_dict)
         if log_dict["test_acc"] > self.best_acc:
             self.best_acc = log_dict["test_acc"]

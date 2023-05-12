@@ -13,13 +13,17 @@ def NMSE(input_data, target):
 
 
 def ins_loss(logits_student, logits_teacher):
-    return NMSE(logits_student, logits_teacher)
+    loss_ins = NMSE(logits_student, logits_teacher)
+    return loss_ins
 
 
 def cla_loss(logits_student, logits_teacher):
-    norm_T_logits_student = F.normalize(logits_student, p=2).T
-    norm_T_logits_teacher = F.normalize(logits_teacher, p=2).T
-    return NMSE(norm_T_logits_student, norm_T_logits_teacher)
+    # norm_T_logits_student = F.normalize(logits_student, p=2).T
+    # norm_T_logits_teacher = F.normalize(logits_teacher, p=2).T
+    # loss_cla = NMSE(norm_T_logits_student, norm_T_logits_teacher)
+
+    loss_cla = NMSE(logits_student.T, logits_teacher.T)
+    return loss_cla
 
 
 def cc_loss(logits_student, logits_teacher):
@@ -34,10 +38,14 @@ def cc_loss(logits_student, logits_teacher):
     #     cc_logits_teacher += (logits_teacher[:, i] - mean_logits_teacher) * (logits_teacher[:, i] - mean_logits_teacher).T
     # cc_logits_student /= (num_classes-1)
     # cc_logits_teacher /= (num_classes-1)
-    norm_logits_student = F.normalize(logits_student, p=2)
-    norm_logits_teacher = F.normalize(logits_teacher, p=2)
-    cc_logits_student = torch.matmul(norm_logits_student.T, norm_logits_student)
-    cc_logits_teacher = torch.matmul(norm_logits_teacher.T, norm_logits_teacher)
+
+    # norm_logits_student = F.normalize(logits_student, p=2)
+    # norm_logits_teacher = F.normalize(logits_teacher, p=2)
+    # cc_logits_student = torch.matmul(norm_logits_student.T, norm_logits_student)
+    # cc_logits_teacher = torch.matmul(norm_logits_teacher.T, norm_logits_teacher)
+
+    cc_logits_student = torch.matmul(logits_student.T, logits_student)
+    cc_logits_teacher = torch.matmul(logits_teacher.T, logits_teacher)
     loss_cc = NMSE(cc_logits_student, cc_logits_teacher) / num_classes**2
     return loss_cc
 
@@ -59,8 +67,9 @@ class CLKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_kd = self.kd_loss_weight * (ins_loss(logits_student, logits_teacher) +
-                                         self.cla_coefficient * (cla_loss(logits_student, logits_teacher)))
+        loss_ins = ins_loss(logits_student, logits_teacher)
+        loss_cla = cla_loss(logits_student, logits_teacher)
+        loss_kd = self.kd_loss_weight * (loss_ins + self.cla_coefficient * loss_cla)
         loss_cc = self.cc_loss_weight * cc_loss(logits_student, logits_teacher)
         losses_dict = {
             "loss_ce": loss_ce,
