@@ -76,7 +76,7 @@ def shapley_fakd_loss(data, num_classes, student, teacher, epoch, data_itx):
     features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
     if epoch >= 1:
         data = data.cpu().numpy()
-        reference_dataset = data[random.sample(range(batch_size), 10)]
+        reference_dataset = data[random.sample(range(batch_size), int(batch_size/2))]
         # features_student = torch.zeros((batch_size, num_features), dtype=torch.float32).cuda()
         # features_teacher = torch.zeros((batch_size, num_features), dtype=torch.float32).cuda()
         #
