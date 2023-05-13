@@ -103,7 +103,7 @@ class BaseTrainer(object):
         # train loops
         self.distiller.train()
         for idx, (data, target) in enumerate(self.train_loader):
-            msg = self.train_iter(data, target, epoch, train_meters)
+            msg = self.train_iter(data, target, epoch, train_meters, idx)
             pbar.set_description(log_msg(msg, "TRAIN"))
             pbar.update()
         pbar.close()
@@ -148,7 +148,7 @@ class BaseTrainer(object):
                 student_state, os.path.join(self.log_path, "student_best")
             )
 
-    def train_iter(self, data, target, epoch, train_meters):
+    def train_iter(self, data, target, epoch, train_meters, data_itx: int):     # data_itx参数只在FAKD中使用
         self.optimizer.zero_grad()
         train_start_time = time.time()
 
@@ -158,7 +158,7 @@ class BaseTrainer(object):
         target = target.cuda(non_blocking=True)
 
         # forward
-        preds, losses_dict = self.distiller(data=data, target=target, epoch=epoch)
+        preds, losses_dict = self.distiller(data=data, target=target, epoch=epoch, data_itx=data_itx)
 
         # backward
         loss = sum([l.mean() for l in losses_dict.values()])

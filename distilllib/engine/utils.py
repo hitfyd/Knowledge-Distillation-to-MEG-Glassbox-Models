@@ -98,6 +98,21 @@ def validate(val_loader, distiller):
     return top1.avg, losses.avg
 
 
+def predict(model, data: torch.Tensor, num_classes=2, batch_size=1024):
+    model.cuda()
+    model.eval()
+    output = torch.zeros(batch_size, num_classes).cuda()  # 预测的置信度和置信度最大的标签编号
+    with torch.no_grad():
+        data_split = torch.split(data, batch_size, dim=0)
+        start = 0
+        for batch_data in data_split:
+            batch_data = batch_data.cuda()
+            batch_data = batch_data.float()
+            output[start:start+len(batch_data)] = model(batch_data)
+            start += len(batch_data)
+    return output
+
+
 def log_msg(msg, mode="INFO"):
     color_map = {
         "INFO": 36,

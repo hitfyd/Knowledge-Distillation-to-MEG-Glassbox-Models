@@ -55,7 +55,7 @@ CFG.SOLVER.TYPE = "SGD"
 CFG.LOG = CN()
 CFG.LOG.SAVE_CHECKPOINT_FREQ = 20
 CFG.LOG.PREFIX = "./output"
-CFG.LOG.WANDB = True
+CFG.LOG.WANDB = False
 
 # Distillation Methods
 

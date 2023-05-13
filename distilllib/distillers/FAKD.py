@@ -9,22 +9,10 @@ from ._base import Distiller
 
 
 def NMSE(input_data, target):
-    # input_data = F.normalize(input_data, p=2)
-    # target = F.normalize(target, p=2)
+    input_data = F.normalize(input_data, p=2)
+    target = F.normalize(target, p=2)
     nmse_loss = F.mse_loss(input_data, target, reduction="mean")
     return nmse_loss
-
-def SingleChannel(origin_input, model):
-    channels, points = origin_input.size()
-    origin_input = origin_input.cpu().numpy()
-    # 初始化扰动数据，生成样本数等于通道数
-    perturbation_data = np.zeros((channels, channels, points), dtype=np.float32)
-    # 填充生成扰动数据
-    for channel in range(channels):
-        perturbation_data[channel, channel, :] = origin_input[channel, :]
-    # 计算每个通道的权重值
-    features = model(torch.from_numpy(perturbation_data).cuda())
-    return features.view(-1)
 
 
 def feature_segment(channels, points, window_length):
@@ -38,18 +26,18 @@ def feature_segment(channels, points, window_length):
 
 
 def feature_attribution(origin_input, model, num_classes: int, reference_dataset, window_length: int = 5, M: int = 8):
-    assert len(origin_input.size()) == 2
-    assert len(reference_dataset.size()) == 3
-    channels, points = origin_input.size()
+    assert len(origin_input.shape) == 2
+    assert len(reference_dataset.shape) == 3
+    channels, points = origin_input.shape
     assert 0 < window_length <= points
     assert points % window_length == 0  # 特征的大小可以被原始输入数据的大小整除
 
     features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
 
-    S1 = torch.zeros((M, channels, points), dtype=torch.float32).cuda()
-    S2 = torch.zeros((M, channels, points), dtype=torch.float32).cuda()
+    S1 = np.zeros((M, channels, points), dtype=np.float32)
+    S2 = np.zeros((M, channels, points), dtype=np.float32)
 
-    attribution_maps = torch.zeros((channels, num_classes), dtype=torch.float32).cuda()
+    attribution_maps = torch.zeros((channels, num_classes), dtype=torch.float32)
 
     for feature in range(features_num):
         for m in range(M):
@@ -59,15 +47,14 @@ def feature_attribution(origin_input, model, num_classes: int, reference_dataset
             feature_mark = np.random.randint(0, 2, features_num, dtype=np.bool_)  # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
             feature_mark[feature] = 0
             feature_mark = np.repeat(feature_mark, window_length)
-            feature_mark = np.reshape(feature_mark, origin_input.size())  # reshape是view，resize是copy
-            feature_mark = torch.from_numpy(feature_mark).cuda()
+            feature_mark = np.reshape(feature_mark, (channels, points))  # reshape是view，resize是copy
 
             S1[m] = S2[m] = feature_mark * origin_input + ~feature_mark * reference_input
             S1[m][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length] = \
                 origin_input[channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length]
         # 计算S1和S2的预测差值
-        S1_preds = model(S1)
-        S2_preds = model(S2)
+        S1_preds = model(torch.from_numpy(S1).cuda())
+        S2_preds = model(torch.from_numpy(S2).cuda())
         feature_weight = (S1_preds - S2_preds).sum(axis=0) / len(S1_preds)  # TODO: 计算中间采样结果并返回
         attribution_maps[channel_list[feature]] = feature_weight
 
@@ -77,6 +64,10 @@ def feature_attribution(origin_input, model, num_classes: int, reference_dataset
 def fakd_loss(data, num_classes, student, teacher):
     batch_size, channels, points = data.size()
     num_features = channels * num_classes
+    reference_dataset = data[random.sample(range(batch_size), 10)]
+
+    data = data.cpu().numpy()
+    reference_dataset = reference_dataset.cpu().numpy()
     features_student = torch.zeros((batch_size, num_features), dtype=torch.float32).cuda()
     features_teacher = torch.zeros((batch_size, num_features), dtype=torch.float32).cuda()
 
@@ -89,12 +80,11 @@ def fakd_loss(data, num_classes, student, teacher):
     # prof = line_profiler.LineProfiler(func)  # 把函数传递到性能分析器中
     # prof.enable()  # 开始性能分析
     for i in range(batch_size):
-        features_student[i] = SingleChannel(data[i], student)
-        features_teacher[i] = SingleChannel(data[i], teacher)
+        # features_student[i] = SingleChannel(data[i], student)
+        # features_teacher[i] = SingleChannel(data[i], teacher)
 
-        # reference_dataset = data[random.sample(range(batch_size), 10)]
-        # features_student[i] = feature_attribution(data[i], student, num_classes, reference_dataset, points)
-        # features_teacher[i] = feature_attribution(data[i], teacher, num_classes, reference_dataset, points)
+        features_student[i] = feature_attribution(data[i], student, num_classes, reference_dataset, points)
+        features_teacher[i] = feature_attribution(data[i], teacher, num_classes, reference_dataset, points)
 
     # prof.disable()  # 停止性能分析
     # prof.print_stats(sys.stdout)  # 打印性能分析结果
@@ -107,7 +97,21 @@ def fakd_loss(data, num_classes, student, teacher):
     return loss_fakd
 
 
-def sc_fakd_loss(data, num_classes, student, teacher):
+def SingleChannel(origin_input, model):
+    channels, points = origin_input.size()
+    origin_input = origin_input.cpu().numpy()
+    # 初始化扰动数据，生成样本数等于通道数
+    perturbation_data = np.zeros((channels, channels, points), dtype=np.float32)
+    # 填充生成扰动数据
+    for channel in range(channels):
+        perturbation_data[channel, channel, :] = origin_input[channel, :]
+    # 计算每个通道的权重值
+    with torch.no_grad():
+        features = model(torch.from_numpy(perturbation_data).cuda())
+    return features.view(-1)
+
+
+def sc_fakd_loss(data, num_classes, student, teacher, data_itx):
     batch_size, channels, points = data.size()
     data = data.cpu().numpy()
     # 初始化扰动数据，生成样本数等于通道数
@@ -115,16 +119,14 @@ def sc_fakd_loss(data, num_classes, student, teacher):
     # 填充生成扰动数据
     for channel in range(channels):
         perturbation_data[:, channel, channel, :] = data[:, channel, :]
+    perturbation_data = torch.from_numpy(perturbation_data.reshape(batch_size * channels, channels, points)).cuda()
     # 计算每个通道的权重值
     with torch.no_grad():
-        features_student = student(torch.from_numpy(perturbation_data.reshape(batch_size*channels, channels, points)).cuda())
-        features_teacher = teacher(torch.from_numpy(perturbation_data.reshape(batch_size*channels, channels, points)).cuda())
-        # if teacher.__class__.__name__ == 'HGRN':
-        #     features_student = F.log_softmax(features_student)
-        loss_fakd = NMSE(features_student, features_teacher)
-        # if teacher.__class__.__name__ == 'HGRN':
-        #     loss_fakd /= 100
+        features_student = student(perturbation_data)
+        features_teacher = teacher(perturbation_data)
+        loss_fakd = NMSE(features_student.view(batch_size, -1), features_teacher.view(batch_size, -1))
     return loss_fakd
+# TODO: 不同归因算法的不同在于扰动数据的生成方法不同，这里将所有样本对应的扰动数据只在第一轮生成一次，其余轮不再重新生成；教师模型的归因特征矩阵也只在第一轮计算
 
 
 class FAKD(Distiller):
@@ -143,7 +145,7 @@ class FAKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_kd = self.kd_loss_weight * fakd_loss(data, self.num_classes, self.student, self.teacher)
+        loss_kd = self.kd_loss_weight * sc_fakd_loss(data, self.num_classes, self.student, self.teacher, kwargs["data_itx"])
         losses_dict = {
             "loss_ce": loss_ce,
             "loss_kd": loss_kd,
