@@ -1,8 +1,9 @@
+import gc
 import random
+from sys import getsizeof
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 
 from ._base import Distiller
@@ -58,63 +59,79 @@ def feature_attribution(origin_input, model, num_classes: int, reference_dataset
         feature_weight = (S1_preds - S2_preds).sum(axis=0) / len(S1_preds)  # TODO: 计算中间采样结果并返回
         attribution_maps[channel_list[feature]] = feature_weight
 
-    return attribution_maps.view(-1)
+    return attribution_maps
 
 
-def fakd_loss(data, num_classes, student, teacher):
+S1_list = []
+S2_list = []
+
+
+def shapley_fakd_loss(data, num_classes, student, teacher, epoch, data_itx):
+    current_device = torch.cuda.current_device()
+    devices_num = torch.cuda.device_count()
     batch_size, channels, points = data.size()
     num_features = channels * num_classes
-    reference_dataset = data[random.sample(range(batch_size), 10)]
+    window_length = points
+    M = 1
+    features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
+    if epoch >= 1:
+        data = data.cpu().numpy()
+        reference_dataset = data[random.sample(range(batch_size), 10)]
+        # features_student = torch.zeros((batch_size, num_features), dtype=torch.float32).cuda()
+        # features_teacher = torch.zeros((batch_size, num_features), dtype=torch.float32).cuda()
+        #
+        # for i in range(batch_size):
+        #     features_student[i] = feature_attribution(data[i], student, num_classes, reference_dataset, points)
+        #     features_teacher[i] = feature_attribution(data[i], teacher, num_classes, reference_dataset, points)
 
-    data = data.cpu().numpy()
-    reference_dataset = reference_dataset.cpu().numpy()
-    features_student = torch.zeros((batch_size, num_features), dtype=torch.float32).cuda()
-    features_teacher = torch.zeros((batch_size, num_features), dtype=torch.float32).cuda()
+        S1 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float32)
+        S2 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float32)
 
-    # import sys
-    # import time
-    # from line_profiler import line_profiler
-    #
-    # func = SingleChannel
-    # time_start = time.time()
-    # prof = line_profiler.LineProfiler(func)  # 把函数传递到性能分析器中
-    # prof.enable()  # 开始性能分析
-    for i in range(batch_size):
-        # features_student[i] = SingleChannel(data[i], student)
-        # features_teacher[i] = SingleChannel(data[i], teacher)
+        for feature in range(features_num):
+            for m in range(M):
+                # 从参考数据集中随机选择一个参考样本，用于替换不考虑的特征核;或者直接选择空数据集
+                reference_input = reference_dataset[np.random.randint(len(reference_dataset))]
 
-        features_student[i] = feature_attribution(data[i], student, num_classes, reference_dataset, points)
-        features_teacher[i] = feature_attribution(data[i], teacher, num_classes, reference_dataset, points)
+                feature_mark = np.random.randint(0, 2, features_num, dtype=np.bool_)  # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
+                feature_mark[feature] = 0
+                feature_mark = np.repeat(feature_mark, window_length)
+                feature_mark = np.reshape(feature_mark, (channels, points))  # reshape是view，resize是copy
 
-    # prof.disable()  # 停止性能分析
-    # prof.print_stats(sys.stdout)  # 打印性能分析结果
-    # prof.print_stats(open('line_profiler', 'w'))  # 打印性能分析结果
-    # time_end = time.time()  # 记录结束时间
-    # run_time = time_end - time_start  # 计算的时间差为程序的执行时间，单位为秒/s
-    # print(run_time)
+                for index in range(batch_size):
+                    S1[index, feature, m] = S2[:, feature, m] = feature_mark * data[index] + ~feature_mark * reference_input
+                    S1[index, feature, m][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length] = \
+                        data[index][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length]
+        # 计算S1和S2的预测差值
+        S1 = S1.reshape(-1, channels, points)
+        S2 = S2.reshape(-1, channels, points)
+        with torch.no_grad():
+            S1_preds = student(torch.from_numpy(S1).cuda())
+            S2_preds = student(torch.from_numpy(S2).cuda())
+            features_student = (S1_preds.view(batch_size, features_num, M, -1) - S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
+            S1_preds = teacher(torch.from_numpy(S1).cuda())
+            S2_preds = teacher(torch.from_numpy(S2).cuda())
+            features_teacher = (S1_preds.view(batch_size, features_num, M, -1) - S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
+            loss_fakd = NMSE(features_student, features_teacher)
 
-    loss_fakd = NMSE(features_student, features_teacher)
+        # S1_list.append(S1)
+        # S2_list.append(S2)
+        # features_teacher_list.append(features_teacher)
+    else:
+        list_index = data_itx*devices_num+current_device
+        with torch.no_grad():
+            S1_preds = student(torch.from_numpy(S1_list[list_index]).cuda())
+            S2_preds = student(torch.from_numpy(S2_list[list_index]).cuda())
+            features_student = (S1_preds.view(batch_size, features_num, M, -1) - S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
+            loss_fakd = NMSE(features_student, features_teacher_list[list_index].cuda(current_device))
     return loss_fakd
-
-
-def SingleChannel(origin_input, model):
-    channels, points = origin_input.size()
-    origin_input = origin_input.cpu().numpy()
-    # 初始化扰动数据，生成样本数等于通道数
-    perturbation_data = np.zeros((channels, channels, points), dtype=np.float32)
-    # 填充生成扰动数据
-    for channel in range(channels):
-        perturbation_data[channel, channel, :] = origin_input[channel, :]
-    # 计算每个通道的权重值
-    with torch.no_grad():
-        features = model(torch.from_numpy(perturbation_data).cuda())
-    return features.view(-1)
 
 
 perturbation_data_list = []
 features_teacher_list = []
 
 
+
+# 不同归因算法的不同在于扰动数据的生成方法不同，这里将所有样本对应的扰动数据只在第一轮生成一次，其余轮不再重新生成；教师模型的归因特征矩阵也只在第一轮计算
 def sc_fakd_loss(data, num_classes, student, teacher, epoch, data_itx):
     current_device = torch.cuda.current_device()
     devices_num = torch.cuda.device_count()
@@ -131,7 +148,7 @@ def sc_fakd_loss(data, num_classes, student, teacher, epoch, data_itx):
         with torch.no_grad():
             features_student = student(torch.from_numpy(perturbation_data).cuda())
             features_teacher = teacher(torch.from_numpy(perturbation_data).cuda())
-            loss_fakd = NMSE(features_student.view(batch_size, -1), features_teacher.view(batch_size, -1))
+            loss_fakd = NMSE(features_student.view(batch_size, channels, -1), features_teacher.view(batch_size, channels, -1))
 
         perturbation_data_list.append(perturbation_data)
         features_teacher_list.append(features_teacher)
@@ -139,10 +156,9 @@ def sc_fakd_loss(data, num_classes, student, teacher, epoch, data_itx):
         list_index = data_itx*devices_num+current_device
         with torch.no_grad():
             features_student = student(torch.from_numpy(perturbation_data_list[list_index]).cuda())
-            loss_fakd = NMSE(features_student.view(batch_size, -1),
-                             features_teacher_list[list_index].view(batch_size, -1).cuda(current_device))
+            loss_fakd = NMSE(features_student.view(batch_size, channels, -1),
+                             features_teacher_list[list_index].view(batch_size, channels, -1).cuda(current_device))
     return loss_fakd
-# TODO: 不同归因算法的不同在于扰动数据的生成方法不同，这里将所有样本对应的扰动数据只在第一轮生成一次，其余轮不再重新生成；教师模型的归因特征矩阵也只在第一轮计算
 
 
 class FAKD(Distiller):
@@ -161,8 +177,7 @@ class FAKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_kd = self.kd_loss_weight * sc_fakd_loss(data, self.num_classes, self.student, self.teacher,
-                                                     kwargs["epoch"], kwargs["data_itx"])
+        loss_kd = self.kd_loss_weight * shapley_fakd_loss(data, self.num_classes, self.student, self.teacher, kwargs["epoch"], kwargs["data_itx"])
         losses_dict = {
             "loss_ce": loss_ce,
             "loss_kd": loss_kd,
