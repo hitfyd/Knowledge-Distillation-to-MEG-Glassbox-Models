@@ -25,7 +25,7 @@ def feature_segment(channels, points, window_length):
     return features_num, channel_list, point_start_list
 
 
-def feature_attribution(origin_input, model, num_classes: int, reference_dataset, window_length: int = 5, M: int = 8):
+def feature_attribution(origin_input, model, num_classes: int, reference_dataset, window_length: int = 5, M: int = 4):
     assert len(origin_input.shape) == 2
     assert len(reference_dataset.shape) == 3
     channels, points = origin_input.shape
@@ -111,20 +111,36 @@ def SingleChannel(origin_input, model):
     return features.view(-1)
 
 
-def sc_fakd_loss(data, num_classes, student, teacher, data_itx):
+perturbation_data_list = []
+features_teacher_list = []
+
+
+def sc_fakd_loss(data, num_classes, student, teacher, epoch, data_itx):
+    current_device = torch.cuda.current_device()
+    devices_num = torch.cuda.device_count()
     batch_size, channels, points = data.size()
-    data = data.cpu().numpy()
-    # 初始化扰动数据，生成样本数等于通道数
-    perturbation_data = np.zeros((batch_size, channels, channels, points), dtype=np.float32)
-    # 填充生成扰动数据
-    for channel in range(channels):
-        perturbation_data[:, channel, channel, :] = data[:, channel, :]
-    perturbation_data = torch.from_numpy(perturbation_data.reshape(batch_size * channels, channels, points)).cuda()
-    # 计算每个通道的权重值
-    with torch.no_grad():
-        features_student = student(perturbation_data)
-        features_teacher = teacher(perturbation_data)
-        loss_fakd = NMSE(features_student.view(batch_size, -1), features_teacher.view(batch_size, -1))
+    if epoch == 1:
+        data = data.cpu().numpy()
+        # 初始化扰动数据，生成样本数等于通道数
+        perturbation_data = np.zeros((batch_size, channels, channels, points), dtype=np.float32)
+        # 填充生成扰动数据
+        for channel in range(channels):
+            perturbation_data[:, channel, channel, :] = data[:, channel, :]
+        perturbation_data = perturbation_data.reshape(batch_size * channels, channels, points)
+        # 计算每个通道的权重值
+        with torch.no_grad():
+            features_student = student(torch.from_numpy(perturbation_data).cuda())
+            features_teacher = teacher(torch.from_numpy(perturbation_data).cuda())
+            loss_fakd = NMSE(features_student.view(batch_size, -1), features_teacher.view(batch_size, -1))
+
+        perturbation_data_list.append(perturbation_data)
+        features_teacher_list.append(features_teacher)
+    else:
+        list_index = data_itx*devices_num+current_device
+        with torch.no_grad():
+            features_student = student(torch.from_numpy(perturbation_data_list[list_index]).cuda())
+            loss_fakd = NMSE(features_student.view(batch_size, -1),
+                             features_teacher_list[list_index].view(batch_size, -1).cuda(current_device))
     return loss_fakd
 # TODO: 不同归因算法的不同在于扰动数据的生成方法不同，这里将所有样本对应的扰动数据只在第一轮生成一次，其余轮不再重新生成；教师模型的归因特征矩阵也只在第一轮计算
 
@@ -145,7 +161,8 @@ class FAKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_kd = self.kd_loss_weight * sc_fakd_loss(data, self.num_classes, self.student, self.teacher, kwargs["data_itx"])
+        loss_kd = self.kd_loss_weight * sc_fakd_loss(data, self.num_classes, self.student, self.teacher,
+                                                     kwargs["epoch"], kwargs["data_itx"])
         losses_dict = {
             "loss_ce": loss_ce,
             "loss_kd": loss_kd,
