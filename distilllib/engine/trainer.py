@@ -93,7 +93,7 @@ class BaseTrainer(object):
         lr = self.cfg.SOLVER.LR
         train_meters = {
             "training_time": AverageMeter(),
-            "data_time": AverageMeter(),
+            # "data_time": AverageMeter(),
             "losses": AverageMeter(),
             "top1": AverageMeter(),
         }
@@ -152,7 +152,7 @@ class BaseTrainer(object):
         self.optimizer.zero_grad()
         train_start_time = time.time()
 
-        train_meters["data_time"].update(time.time() - train_start_time)
+        # train_meters["data_time"].update(time.time() - train_start_time)
         data = data.float()
         data = data.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
@@ -171,9 +171,9 @@ class BaseTrainer(object):
         train_meters["losses"].update(loss.cpu().detach().numpy().mean(), batch_size)
         train_meters["top1"].update(acc1[0], batch_size)
         # print info
-        msg = "Epoch:{}| Time(data):{:.3f}| Time(train):{:.3f}| Loss:{:.4f}| Top-1:{:.3f}".format(
+        msg = "Epoch:{}| Time(train):{:.3f}| Loss:{:.4f}| Top-1:{:.3f}".format(
             epoch,
-            train_meters["data_time"].avg,
+            # train_meters["data_time"].avg,
             train_meters["training_time"].avg,
             train_meters["losses"].avg,
             train_meters["top1"].avg,
