@@ -148,7 +148,7 @@ class BaseTrainer(object):
                 student_state, os.path.join(self.log_path, "student_best")
             )
 
-    def train_iter(self, data, target, epoch, train_meters, data_itx: int):     # data_itx参数只在FAKD中使用
+    def train_iter(self, data, target, epoch, train_meters, data_itx: int = 0):  # data_itx参数只在FAKD中使用
         self.optimizer.zero_grad()
         train_start_time = time.time()
 
@@ -179,4 +179,3 @@ class BaseTrainer(object):
             train_meters["top1"].avg,
         )
         return msg
-
