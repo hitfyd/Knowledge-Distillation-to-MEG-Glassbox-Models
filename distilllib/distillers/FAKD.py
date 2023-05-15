@@ -5,6 +5,7 @@ import torch
 import torch.nn.functional as F
 
 from ._base import Distiller
+from ..engine.utils import predict
 
 
 def NMSE(input_data, target):
@@ -34,9 +35,9 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
     devices_num = torch.cuda.device_count()
     batch_size, channels, points = data.size()
     window_length = points
-    M = 8
+    M = 2
     features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
-    # if data_itx >=10:
+    # if data_itx >= 2:
     #     return torch.zeros(1).cuda()
     if epoch >= 1:
         data = data.cpu().numpy()
@@ -48,7 +49,7 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
         for feature in range(features_num):
             for m in range(M):
                 # 从参考数据集中随机选择一个参考样本，用于替换不考虑的特征核;或者直接选择空数据集
-                reference_input = reference_dataset[np.random.randint(len(reference_dataset))]
+                reference_input = reference_dataset[np.random.randint(len(reference_dataset))]  # 参考样本有概率是样本本身  TODO：扰动样本根据data_index选择，比如选择下一个样本
 
                 feature_mark = np.random.randint(0, 2, features_num, dtype=np.bool_)  # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
                 feature_mark[feature] = 0
@@ -74,11 +75,12 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
         S1 = S1.reshape(-1, channels, points)
         S2 = S2.reshape(-1, channels, points)
         with torch.no_grad():
-            S1_preds = student(torch.from_numpy(S1).cuda())
-            S2_preds = student(torch.from_numpy(S2).cuda())
-            features_student = (S1_preds.view(batch_size, features_num, M, -1) - S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
-            S1_preds = teacher(torch.from_numpy(S1).cuda())
-            S2_preds = teacher(torch.from_numpy(S2).cuda())
+            S1_student_preds = predict(student, S1)
+            S2_student_preds = predict(student, S2)
+            features_student = (S1_student_preds.view(batch_size, features_num, M, -1) -
+                                S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
+            S1_preds = predict(teacher, S1)
+            S2_preds = predict(teacher, S2)
             features_teacher = (S1_preds.view(batch_size, features_num, M, -1) - S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
             loss_fakd = NMSE(features_student, features_teacher)
 
@@ -88,9 +90,10 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
     else:
         list_index = data_itx*devices_num+current_device
         with torch.no_grad():
-            S1_preds = student(torch.from_numpy(S1_list[list_index]).cuda())
-            S2_preds = student(torch.from_numpy(S2_list[list_index]).cuda())
-            features_student = (S1_preds.view(batch_size, features_num, M, -1) - S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
+            S1_student_preds = predict(student, S1_list[list_index])
+            S2_student_preds = predict(student, S2_list[list_index])
+            features_student = (S1_student_preds.view(batch_size, features_num, M, -1) -
+                                S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
             loss_fakd = NMSE(features_student, features_teacher_list[list_index].cuda(current_device))
     return loss_fakd
 
