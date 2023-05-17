@@ -98,20 +98,26 @@ def validate(val_loader, distiller):
     return top1.avg, losses.avg
 
 
-def predict(model, data, num_classes=2, batch_size=8192):
+def predict(model, data, num_classes=2, batch_size=8192, eval=False):
     model.cuda()
-    model.eval()
     data = torch.from_numpy(data).cuda()
-    # with torch.no_grad():
-    #     return model(data)
+    data_split = torch.split(data, batch_size, dim=0)
     output = torch.zeros(len(data), num_classes).cuda()  # 预测的置信度和置信度最大的标签编号
-    with torch.no_grad():
-        data_split = torch.split(data, batch_size, dim=0)
-        start = 0
+    start = 0
+    if eval:
+        model.eval()
+        with torch.no_grad():
+            for batch_data in data_split:
+                batch_data = batch_data.cuda()
+                batch_data = batch_data.float()
+                output[start:start+len(batch_data)] = model(batch_data)
+                start += len(batch_data)
+    else:
+        model.eval()
         for batch_data in data_split:
             batch_data = batch_data.cuda()
             batch_data = batch_data.float()
-            output[start:start+len(batch_data)] = model(batch_data)
+            output[start:start + len(batch_data)] = model(batch_data)
             start += len(batch_data)
     return output
 

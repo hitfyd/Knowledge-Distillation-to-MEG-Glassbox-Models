@@ -29,9 +29,7 @@ class KD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_kd = self.kd_loss_weight * kd_loss(
-            logits_student, logits_teacher, self.temperature
-        )
+        loss_kd = self.kd_loss_weight * kd_loss(logits_student, logits_teacher, self.temperature)
         losses_dict = {
             "loss_ce": loss_ce,
             "loss_kd": loss_kd,

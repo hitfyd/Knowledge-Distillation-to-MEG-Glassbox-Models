@@ -4,15 +4,17 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from .KD import kd_loss
 from ._base import Distiller
 from ..engine.utils import predict
 
 
-def NMSE(input_data, target):
+# fa_loss的值太小了：1、改成归一化后再对比；2、直接使用KL散度
+def fa_loss(input_data, target):
     input_data = F.normalize(input_data, p=2)
     target = F.normalize(target, p=2)
-    nmse_loss = F.mse_loss(input_data, target, reduction="mean")
-    return nmse_loss
+    loss_kd = F.mse_loss(input_data, target, reduction="mean")
+    return loss_kd
 
 
 def feature_segment(channels, points, window_length):
@@ -62,27 +64,26 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
         # 计算S1和S2的预测差值
         S1 = S1.reshape(-1, channels, points)
         S2 = S2.reshape(-1, channels, points)
-        with torch.no_grad():
-            S1_student_preds = predict(student, S1)
-            S2_student_preds = predict(student, S2)
-            features_student = (S1_student_preds.view(batch_size, features_num, M, -1) -
-                                S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
-            S1_preds = predict(teacher, S1)
-            S2_preds = predict(teacher, S2)
-            features_teacher = (S1_preds.view(batch_size, features_num, M, -1) - S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
-            loss_fakd = NMSE(features_student, features_teacher)
+        S1_student_preds = predict(student, S1)
+        S2_student_preds = predict(student, S2)
+        features_student = (S1_student_preds.view(batch_size, features_num, M, -1) -
+                            S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
+        S1_preds = predict(teacher, S1, eval=True)
+        S2_preds = predict(teacher, S2, eval=True)
+        features_teacher = (S1_preds.view(batch_size, features_num, M, -1) - S2_preds.view(batch_size, features_num, M,
+                                                                                           -1)).sum(axis=(2)) / M
+        loss_fakd = fa_loss(features_student, features_teacher)
 
         S1_list.append(S1)
         S2_list.append(S2)
         features_teacher_list.append(features_teacher)
     else:
         list_index = data_itx*devices_num+current_device
-        with torch.no_grad():
-            S1_student_preds = predict(student, S1_list[list_index])
-            S2_student_preds = predict(student, S2_list[list_index])
-            features_student = (S1_student_preds.view(batch_size, features_num, M, -1) -
-                                S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
-            loss_fakd = NMSE(features_student, features_teacher_list[list_index].cuda(current_device))
+        S1_student_preds = predict(student, S1_list[list_index])
+        S2_student_preds = predict(student, S2_list[list_index])
+        features_student = (S1_student_preds.view(batch_size, features_num, M, -1) -
+                            S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
+        loss_fakd = fa_loss(features_student, features_teacher_list[list_index].cuda(current_device))
     return loss_fakd
 
 
@@ -100,25 +101,23 @@ def sc_fakd_loss(data, student, teacher, **kwargs):
     if epoch == 1:
         data = data.cpu().numpy()
         # 初始化扰动数据，生成样本数等于通道数
-        perturbation_data = np.zeros((batch_size, channels, channels, points), dtype=np.float32)
+        perturbation_data = np.zeros((batch_size, channels, channels, points), dtype=np.float16)
         # 填充生成扰动数据
         for channel in range(channels):
             perturbation_data[:, channel, channel, :] = data[:, channel, :]
         perturbation_data = perturbation_data.reshape(batch_size * channels, channels, points)
         # 计算每个通道的权重值
-        with torch.no_grad():
-            features_student = student(torch.from_numpy(perturbation_data).cuda())
-            features_teacher = teacher(torch.from_numpy(perturbation_data).cuda())
-            loss_fakd = NMSE(features_student.view(batch_size, channels, -1), features_teacher.view(batch_size, channels, -1))
+        features_student = predict(student, perturbation_data)
+        features_teacher = predict(teacher, perturbation_data, eval=True)
+        loss_fakd = fa_loss(features_student.view(batch_size, channels, -1), features_teacher.view(batch_size, channels, -1))
 
         perturbation_data_list.append(perturbation_data)
         features_teacher_list.append(features_teacher)
     else:
         list_index = data_itx*devices_num+current_device
-        with torch.no_grad():
-            features_student = student(torch.from_numpy(perturbation_data_list[list_index]).cuda())
-            loss_fakd = NMSE(features_student.view(batch_size, channels, -1),
-                             features_teacher_list[list_index].view(batch_size, channels, -1).cuda(current_device))
+        features_student = predict(student, perturbation_data_list[list_index])
+        loss_fakd = fa_loss(features_student.view(batch_size, channels, -1),
+                            features_teacher_list[list_index].view(batch_size, channels, -1).cuda(current_device))
     return loss_fakd
 
 
@@ -127,8 +126,10 @@ class FAKD(Distiller):
 
     def __init__(self, student, teacher, cfg):
         super(FAKD, self).__init__(student, teacher)
+        self.temperature = cfg.FAKD.TEMPERATURE
         self.ce_loss_weight = cfg.FAKD.LOSS.CE_WEIGHT
         self.kd_loss_weight = cfg.FAKD.LOSS.KD_WEIGHT
+        self.fa_loss_weight = cfg.FAKD.LOSS.FA_WEIGHT
 
     def forward_train(self, data, target, **kwargs):
         logits_student, penalty = self.student(data, is_training_data=True)
@@ -144,10 +145,13 @@ class FAKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_kd = self.kd_loss_weight * sc_fakd_loss(data, self.student, self.teacher, **kwargs)
+        loss_kd = self.kd_loss_weight * kd_loss(logits_student, logits_teacher, self.temperature)
+        loss_fa = self.fa_loss_weight * sc_fakd_loss(data, self.student, self.teacher, **kwargs)
+
         losses_dict = {
-            "loss_ce": loss_ce,
-            "loss_kd": loss_kd,
+            # "loss_ce": loss_ce,
+            # "loss_kd": loss_kd,
+            "loss_fa": loss_fa,
         }
 
         # prof.disable()  # 停止性能分析
