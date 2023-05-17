@@ -37,42 +37,28 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
     window_length = points
     M = 4
     features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
-    # if data_itx >= 2:
-    #     return torch.zeros(1).cuda()
-    if epoch >= 1:
+    if epoch == 1:
         data = data.cpu().numpy()
-        reference_dataset = data[random.sample(range(batch_size), int(batch_size/2))]
 
-        S1 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float32)
-        S2 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float32)
+        S1 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float16)
+        S2 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float16)
 
         for feature in range(features_num):
             for m in range(M):
-                # 从参考数据集中随机选择一个参考样本，用于替换不考虑的特征核;或者直接选择空数据集
-                # reference_input = reference_dataset[np.random.randint(len(reference_dataset))]  # 参考样本有概率是样本本身
-
-                feature_mark = np.random.randint(0, 2, features_num, dtype=np.bool_)  # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
-                feature_mark[feature] = 0
-                feature_mark = np.repeat(feature_mark, window_length)
-                feature_mark = np.reshape(feature_mark, (channels, points))  # reshape是view，resize是copy
 
                 for index in range(batch_size):
+                    feature_mark = np.random.randint(0, 2, features_num, dtype=np.bool_)  # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
+                    feature_mark[feature] = 0
+                    feature_mark = np.repeat(feature_mark, window_length)
+                    feature_mark = np.reshape(feature_mark, (channels, points))  # reshape是view，resize是copy
+                    # 随机选择一个参考样本，用于替换不考虑的特征核
                     reference_index = (index + np.random.randint(1, batch_size)) % batch_size
+                    assert index != reference_index # 参考样本不能是样本本身
                     reference_input = data[reference_index]
                     S1[index, feature, m] = S2[index, feature, m] = feature_mark * data[index] + ~feature_mark * reference_input
                     S1[index, feature, m][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length] = \
                         data[index][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length]
 
-                # reference_dataset = data[random.sample(range(batch_size), batch_size)]
-                # feature_mark = np.random.randint(0, 2, features_num * batch_size, dtype=np.bool_)  # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
-                # feature_mark = np.reshape(feature_mark, (batch_size, features_num))
-                # feature_mark[:, feature] = 0
-                # feature_mark = np.repeat(feature_mark, window_length)
-                # feature_mark = np.reshape(feature_mark, (batch_size, features_num, points))  # reshape是view，resize是copy
-                #
-                # S1[:, feature, m] = S2[:, feature, m] = feature_mark * data + ~feature_mark * reference_dataset
-                # S1[:, feature, m, channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length] = \
-                #     data[:, channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length]
         # 计算S1和S2的预测差值
         S1 = S1.reshape(-1, channels, points)
         S2 = S2.reshape(-1, channels, points)
@@ -86,9 +72,9 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
             features_teacher = (S1_preds.view(batch_size, features_num, M, -1) - S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
             loss_fakd = NMSE(features_student, features_teacher)
 
-        # S1_list.append(S1)
-        # S2_list.append(S2)
-        # features_teacher_list.append(features_teacher)
+        S1_list.append(S1)
+        S2_list.append(S2)
+        features_teacher_list.append(features_teacher)
     else:
         list_index = data_itx*devices_num+current_device
         with torch.no_grad():
@@ -158,7 +144,7 @@ class FAKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_kd = self.kd_loss_weight * shapley_fakd_loss(data, self.student, self.teacher, **kwargs)
+        loss_kd = self.kd_loss_weight * sc_fakd_loss(data, self.student, self.teacher, **kwargs)
         losses_dict = {
             "loss_ce": loss_ce,
             "loss_kd": loss_kd,
