@@ -149,7 +149,7 @@ class FAKD(Distiller):
         loss_fa = self.fa_loss_weight * sc_fakd_loss(data, self.student, self.teacher, **kwargs)
 
         losses_dict = {
-            # "loss_ce": loss_ce,
+            "loss_ce": loss_ce,
             # "loss_kd": loss_kd,
             "loss_fa": loss_fa,
         }
