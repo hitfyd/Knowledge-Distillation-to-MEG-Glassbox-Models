@@ -103,6 +103,8 @@ class BaseTrainer(object):
         # train loops
         self.distiller.train()
         for idx, (data, target) in enumerate(self.train_loader):
+            if idx >= 5:   # 临时截断，缩短训练时间
+                break
             msg = self.train_iter(data, target, epoch, train_meters, idx)
             pbar.set_description(log_msg(msg, "TRAIN"))
             pbar.update()

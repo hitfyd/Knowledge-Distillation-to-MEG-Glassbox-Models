@@ -35,7 +35,7 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
     devices_num = torch.cuda.device_count()
     batch_size, channels, points = data.size()
     window_length = points
-    M = 2
+    M = 4
     features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
     # if data_itx >= 2:
     #     return torch.zeros(1).cuda()
@@ -49,7 +49,7 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
         for feature in range(features_num):
             for m in range(M):
                 # 从参考数据集中随机选择一个参考样本，用于替换不考虑的特征核;或者直接选择空数据集
-                reference_input = reference_dataset[np.random.randint(len(reference_dataset))]  # 参考样本有概率是样本本身  TODO：扰动样本根据data_index选择，比如选择下一个样本
+                # reference_input = reference_dataset[np.random.randint(len(reference_dataset))]  # 参考样本有概率是样本本身
 
                 feature_mark = np.random.randint(0, 2, features_num, dtype=np.bool_)  # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
                 feature_mark[feature] = 0
@@ -57,6 +57,8 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
                 feature_mark = np.reshape(feature_mark, (channels, points))  # reshape是view，resize是copy
 
                 for index in range(batch_size):
+                    reference_index = (index + np.random.randint(1, batch_size)) % batch_size
+                    reference_input = data[reference_index]
                     S1[index, feature, m] = S2[index, feature, m] = feature_mark * data[index] + ~feature_mark * reference_input
                     S1[index, feature, m][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length] = \
                         data[index][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length]
