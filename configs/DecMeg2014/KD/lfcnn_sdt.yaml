@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "kd,hgrn,std"
+  TAG: "kd,lfcnn,std"
   PROJECT: "DecMeg2014_baselines"
 DATASET:
   TYPE: "DecMeg2014"
@@ -9,8 +9,8 @@ DATASET:
   NUM_CLASSES: 2
 DISTILLER:
   TYPE: "KD"
-  TEACHER: "DecMeg2014_hgrn"
-  STUDENT: "std"
+  TEACHER: "DecMeg2014_lfcnn"
+  STUDENT: "sdt"
 SOLVER:
   BATCH_SIZE: 1024
   EPOCHS: 100

@@ -1,5 +1,3 @@
-import random
-
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -47,7 +45,6 @@ def shapley_fakd_loss(data, student, teacher, **kwargs):
 
         for feature in range(features_num):
             for m in range(M):
-
                 for index in range(batch_size):
                     feature_mark = np.random.randint(0, 2, features_num, dtype=np.bool_)  # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
                     feature_mark[feature] = 0
@@ -150,7 +147,7 @@ class FAKD(Distiller):
 
         losses_dict = {
             "loss_ce": loss_ce,
-            # "loss_kd": loss_kd,
+            "loss_kd": loss_kd,
             "loss_fa": loss_fa,
         }
 

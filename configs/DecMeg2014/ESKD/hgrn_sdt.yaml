@@ -1,16 +1,16 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "eskd,lfcnn,std"
-  PROJECT: "CamCAN_baselines"
+  TAG: "eskd,hgrn,std"
+  PROJECT: "DecMeg2014_baselines"
 DATASET:
-  TYPE: "CamCAN"
+  TYPE: "DecMeg2014"
   CHANNELS: 204
-  POINTS: 100
+  POINTS: 250
   NUM_CLASSES: 2
 DISTILLER:
   TYPE: "ESKD"
-  TEACHER: "CamCAN_lfcnn"
-  STUDENT: "std"
+  TEACHER: "DecMeg2014_hgrn"
+  STUDENT: "sdt"
 #SOLVER:
 #  BATCH_SIZE: 1024
 #  EPOCHS: 100

@@ -1,7 +1,7 @@
 import os
 
 from .DNNClassifier import lfcnn, varcnn, hgrn
-from .SoftDecisionTree import std
+from .SoftDecisionTree import sdt
 
 
 model_checkpoint_prefix = os.path.join(
@@ -20,5 +20,5 @@ model_dict = {
     "DecMeg2014_hgrn": (hgrn, model_checkpoint_prefix + "DecMeg2014_HGRN_20220616192753_checkpoint.pt"),
 
     # students
-    "std": (std, None),
+    "sdt": (sdt, None),
 }
