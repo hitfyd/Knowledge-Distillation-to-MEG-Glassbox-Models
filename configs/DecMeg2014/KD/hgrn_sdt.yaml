@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "kd,hgrn,std"
+  TAG: "kd,hgrn,sdt"
   PROJECT: "DecMeg2014_baselines"
 DATASET:
   TYPE: "DecMeg2014"

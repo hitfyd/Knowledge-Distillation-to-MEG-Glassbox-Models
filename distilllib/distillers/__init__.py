@@ -5,7 +5,8 @@ from .GKD import GKD
 from .DKD import DKD
 from .CLKD import CLKD
 from .MSEKD import MSEKD
-from .FAKD import FAKD
+from .SCFAKD import SCFAKD
+from .ShapleyFAKD import ShapleyFAKD
 
 distiller_dict = {
     "NONE": Vanilla,
@@ -15,5 +16,6 @@ distiller_dict = {
     "MSEKD": MSEKD,
     "DKD": DKD,
     "CLKD": CLKD,
-    "FAKD": FAKD,
+    "SCFAKD": SCFAKD,
+    "ShapleyFAKD": ShapleyFAKD,
 }

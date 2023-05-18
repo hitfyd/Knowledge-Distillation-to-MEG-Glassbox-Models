@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "eskd,lfcnn,std"
+  TAG: "eskd,lfcnn,sdt"
   PROJECT: "CamCAN_baselines"
 DATASET:
   TYPE: "CamCAN"

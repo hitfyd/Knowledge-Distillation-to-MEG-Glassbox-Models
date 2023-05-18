@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "vanilla,std"
+  TAG: "vanilla,sdt"
   PROJECT: "CamCAN_baselines"
 DATASET:
   TYPE: "CamCAN"

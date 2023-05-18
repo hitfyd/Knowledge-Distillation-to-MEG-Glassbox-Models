@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "vanilla,std"
+  TAG: "vanilla,sdt"
   PROJECT: "DecMeg2014_baselines"
 DATASET:
   TYPE: "DecMeg2014"
@@ -9,10 +9,10 @@ DATASET:
   NUM_CLASSES: 2
 DISTILLER:
   TYPE: "NONE"
-  TEACHER: "DecMeg2014_lfcnn"
+  TEACHER: ""
   STUDENT: "sdt"
 SOLVER:
-  BATCH_SIZE: 1024
+  BATCH_SIZE: 64
   EPOCHS: 100
   LR: 0.003
   LR_DECAY_STAGES: [150, 180, 210]

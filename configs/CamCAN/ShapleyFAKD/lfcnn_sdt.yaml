@@ -1,23 +1,22 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "dkd,varcnn,sdt"
-  PROJECT: "DecMeg2014_baselines"
+  TAG: "shapleyfakd,lfcnn,sdt"
+  PROJECT: "CamCAN_baselines"
 DATASET:
-  TYPE: "DecMeg2014"
+  TYPE: "CamCAN"
   CHANNELS: 204
-  POINTS: 250
+  POINTS: 100
   NUM_CLASSES: 2
 DISTILLER:
-  TYPE: "DKD"
-  TEACHER: "DecMeg2014_varcnn"
+  TYPE: "ShapleyFAKD"
+  TEACHER: "CamCAN_lfcnn"
   STUDENT: "sdt"
 SOLVER:
-  BATCH_SIZE: 1024
-  EPOCHS: 100
+  BATCH_SIZE: 256
+  EPOCHS: 10
   LR: 0.003
   LR_DECAY_STAGES: [150, 180, 210]
   LR_DECAY_RATE: 0.1
   WEIGHT_DECAY: 0.0005
   MOMENTUM: 0.9
   TYPE: "SGD"
-

@@ -48,8 +48,12 @@ class Vanilla(nn.Module):
         return [v for k, v in self.student.named_parameters()]
 
     def forward_train(self, data, target, **kwargs):
-        logits_student, penalty = self.student(data, is_training_data=True)
-        loss = F.cross_entropy(logits_student, target) + penalty
+        if self.student.__class__.__name__ == 'SDT':
+            logits_student, penalty = self.student(data, is_training_data=True)
+            loss = F.cross_entropy(logits_student, target) + penalty
+        else:
+            logits_student = self.student(data)
+            loss = F.cross_entropy(logits_student, target)
         return logits_student, {"ce": loss}
 
     def forward(self, **kwargs):

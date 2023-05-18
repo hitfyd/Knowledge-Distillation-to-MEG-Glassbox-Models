@@ -98,7 +98,7 @@ def validate(val_loader, distiller):
     return top1.avg, losses.avg
 
 
-def predict(model, data, num_classes=2, batch_size=8192, eval=False):
+def predict(model, data, num_classes=2, batch_size=1024, eval=False):
     model.cuda()
     data = torch.from_numpy(data).cuda()
     data_split = torch.split(data, batch_size, dim=0)
