@@ -88,7 +88,7 @@ def validate(val_loader, distiller):
             # measure elapsed time
             batch_time.update(time.time() - start_time)
             start_time = time.time()
-            msg = "Loss:{loss:.4f}| Top-1:{top1:.3f}".format(
+            msg = "Loss:{loss:.4f}| Top-1:{top1:.4f}".format(
                 loss=losses.avg,
                 top1=top1.avg
             )

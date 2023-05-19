@@ -5,43 +5,35 @@ import torch.backends.cudnn as cudnn
 cudnn.benchmark = True
 
 from distilllib.distillers import Vanilla
-from distilllib.models import cifar_model_dict, imagenet_model_dict
-from distilllib.dataset import get_dataset
-from distilllib.dataset.imagenet import get_imagenet_val_loader
-from distilllib.engine.utils import load_checkpoint, validate
+from distilllib.models import model_dict
+from distilllib.engine.utils import load_checkpoint, validate, get_data_loader_from_dataset
 from distilllib.engine.cfg import CFG as cfg
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--model", type=str, default="")
-    parser.add_argument("-c", "--ckpt", type=str, default="pretrain")
-    parser.add_argument(
-        "-d",
-        "--dataset",
-        type=str,
-        default="cifar100",
-        choices=["cifar100", "imagenet"],
-    )
-    parser.add_argument("-bs", "--batch-size", type=int, default=64)
+    parser.add_argument("-m", "--model", type=str, default="CamCAN_lfcnn", choices=
+    ["CamCAN_lfcnn", "CamCAN_varcnn", "CamCAN_hgrn", "DecMeg2014_lfcnn", "DecMeg2014_varcnn", "DecMeg2014_hgrn", "sdt"])
+    parser.add_argument("-d", "--dataset", type=str, default="CamCAN", choices=["CamCAN", "DecMeg2014"])
+    parser.add_argument("-bs", "--batch-size", type=int, default=1024)
+    parser.add_argument("-cp", "--pretrain-checkpoint", type=str, default="")
     args = parser.parse_args()
 
-    cfg.DATASET.TYPE = args.dataset
-    cfg.DATASET.TEST.BATCH_SIZE = args.batch_size
-    if args.dataset == "imagenet":
-        val_loader = get_imagenet_val_loader(args.batch_size)
-        if args.ckpt == "pretrain":
-            model = imagenet_model_dict[args.model](pretrained=True)
-        else:
-            model = imagenet_model_dict[args.model](pretrained=False)
-            model.load_state_dict(load_checkpoint(args.ckpt)["model"])
-    elif args.dataset == "cifar100":
-        train_loader, val_loader, num_data, num_classes = get_dataset(cfg)
-        model, pretrain_model_path = cifar_model_dict[args.model]
-        model = model(num_classes=num_classes)
-        ckpt = pretrain_model_path if args.ckpt == "pretrain" else args.ckpt
-        model.load_state_dict(load_checkpoint(ckpt)["model"])
+    model_name, dataset, batch_size, pretrain_checkpoint = \
+        args.model, args.dataset, args.batch_size, args.pretrain_checkpoint
+    val_loader = get_data_loader_from_dataset('../dataset/{}_test.npz'.format(dataset), batch_size)
+    net, pretrain_model_path = model_dict[model_name]
+    if model_name == "sdt":
+        assert pretrain_checkpoint != ""
+        pretrain_model_path = pretrain_checkpoint
+    if dataset == "CamCAN":
+        channels, points, num_classes = 204, 100, 2
+    elif dataset == "DecMeg2014":
+        channels, points, num_classes = 204, 250, 2
+    else:
+        raise Exception
+    model = net(channels=channels, points=points, num_classes=num_classes)
+    model.load_state_dict(load_checkpoint(pretrain_model_path))
     model = Vanilla(model)
     model = model.cuda()
     model = torch.nn.DataParallel(model)
-    test_acc, test_acc_top5, test_loss = validate(val_loader, model)
+    test_acc, test_loss = validate(val_loader, model)
