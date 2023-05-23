@@ -73,6 +73,13 @@ class BaseTrainer(object):
             lines.append("-" * 25 + os.linesep)
             writer.writelines(lines)
 
+    # 增加L1正则化
+    def __l1_regularization__(self, l1_penalty=3e-4):
+        regularization_loss = 0
+        for param in self.distiller.module.get_learnable_parameters():
+            regularization_loss += torch.sum(abs(param))  # torch.norm(param, p=1)
+        return l1_penalty * regularization_loss
+
     def train(self, resume=False):
         epoch = 1
         if resume:
@@ -163,7 +170,7 @@ class BaseTrainer(object):
         preds, losses_dict = self.distiller(data=data, target=target, epoch=epoch, data_itx=data_itx)
 
         # backward
-        loss = sum([l.mean() for l in losses_dict.values()])
+        loss = sum([l.mean() for l in losses_dict.values()])    # + self.__l1_regularization__()
         loss.backward()
         self.optimizer.step()
         train_meters["training_time"].update(time.time() - train_start_time)
