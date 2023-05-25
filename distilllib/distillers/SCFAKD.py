@@ -10,7 +10,8 @@ from ..engine.utils import predict
 def fa_loss(input_data, target):
     input_data = F.normalize(input_data, p=2)
     target = F.normalize(target, p=2)
-    loss_fa = F.mse_loss(input_data, target, reduction="mean")
+    loss_fa = F.mse_loss(input_data, target, reduction="mean") \
+              # + F.mse_loss(input_data.permute(1, 0, 2), target.permute(1, 0, 2), reduction="mean")    # 样本间类关系知识
     return loss_fa
 
 
@@ -35,12 +36,13 @@ def sc_fakd_loss(data, student, teacher, **kwargs):
         # 计算每个通道的权重值
         features_student = predict(student, perturbation_data)
         features_teacher = predict(teacher, perturbation_data, eval=True)
-        loss_fakd = fa_loss(features_student.view(batch_size, channels, -1), features_teacher.view(batch_size, channels, -1))
+        loss_fakd = fa_loss(features_student.view(batch_size, channels, -1),
+                            features_teacher.view(batch_size, channels, -1))
 
         perturbation_data_list.append(perturbation_data)
         features_teacher_list.append(features_teacher)
     else:
-        list_index = data_itx*devices_num+current_device
+        list_index = data_itx * devices_num + current_device
         features_student = predict(student, perturbation_data_list[list_index])
         loss_fakd = fa_loss(features_student.view(batch_size, channels, -1),
                             features_teacher_list[list_index].view(batch_size, channels, -1).cuda(current_device))
