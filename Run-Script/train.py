@@ -13,7 +13,7 @@ from distilllib.models import model_dict
 
 
 def main(cfg, resume, opts):
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
+    os.environ["CUDA_VISIBLE_DEVICES"] = cfg.EXPERIMENT.GPU_IDS
     setup_seed(cfg.EXPERIMENT.SEED)
     experiment_name = cfg.EXPERIMENT.NAME
     if experiment_name == "":

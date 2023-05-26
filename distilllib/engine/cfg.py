@@ -22,6 +22,7 @@ CFG.EXPERIMENT.PROJECT = "distill"
 CFG.EXPERIMENT.NAME = ""
 CFG.EXPERIMENT.TAG = "default"
 CFG.EXPERIMENT.SEED = 3407  # 0-best; 1-worst; 3407
+CFG.EXPERIMENT.GPU_IDS = "0"    # Only one GPU is used
 
 # Dataset
 CFG.DATASET = CN()
