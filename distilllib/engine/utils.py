@@ -122,6 +122,11 @@ def predict(model, data, num_classes=2, batch_size=1024, eval=False):
     return output
 
 
+def individual_predict(model, individual_data, eval=True):
+    pred = predict(model, np.expand_dims(individual_data, 0), eval=eval)
+    return pred[0]
+
+
 def log_msg(msg, mode="INFO"):
     color_map = {
         "INFO": 36,

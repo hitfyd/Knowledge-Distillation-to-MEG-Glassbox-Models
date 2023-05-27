@@ -97,11 +97,10 @@ class ShapleyFAKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        if self.with_kd:
-            loss_kd = self.kd_loss_weight * kd_loss(logits_student, logits_teacher, self.temperature)
         loss_fa = self.fa_loss_weight * shapley_fakd_loss(data, self.student, self.teacher, self.M, **kwargs)
 
         if self.with_kd:
+            loss_kd = self.kd_loss_weight * kd_loss(logits_student, logits_teacher, self.temperature)
             losses_dict = {
                 "loss_ce": loss_ce,
                 "loss_kd": loss_kd,
