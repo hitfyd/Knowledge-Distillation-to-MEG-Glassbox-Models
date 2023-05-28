@@ -2,6 +2,7 @@ EXPERIMENT:
   NAME: ""
   TAG: "shapleyfakd,lfcnn,sdt"
   PROJECT: "CamCAN_baselines"
+  REPETITION_NUM: 3
 DATASET:
   TYPE: "CamCAN"
   CHANNELS: 204
@@ -13,7 +14,7 @@ DISTILLER:
   STUDENT: "sdt"
 SOLVER:
   BATCH_SIZE: 512
-  EPOCHS: 100
+  EPOCHS: 50
   LR: 0.003
   LR_DECAY_STAGES: [150, 180, 210]
   LR_DECAY_RATE: 0.1

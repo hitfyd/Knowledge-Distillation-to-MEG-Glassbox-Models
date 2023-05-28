@@ -51,7 +51,7 @@ class BaseTrainer(object):
             raise NotImplementedError(cfg.SOLVER.TYPE)
         return optimizer
 
-    def log(self, lr, epoch, log_dict):
+    def log(self, epoch, log_dict):
         if self.cfg.LOG.WANDB:
             import wandb
 
@@ -64,13 +64,11 @@ class BaseTrainer(object):
         # worklog.txt
         with open(os.path.join(self.log_path, "worklog.txt"), "a") as writer:
             lines = [
-                "-" * 25 + os.linesep,
-                "epoch: {}".format(epoch) + os.linesep,
-                "lr: {:.4f}".format(float(lr)) + os.linesep,
+                "epoch: {}\t".format(epoch),
             ]
             for k, v in log_dict.items():
-                lines.append("{}: {:.2f}".format(k, v) + os.linesep)
-            lines.append("-" * 25 + os.linesep)
+                lines.append("{}: {:.4f}\t".format(k, v))
+            lines.append(os.linesep)
             writer.writelines(lines)
 
     # 增加L1正则化
@@ -80,22 +78,24 @@ class BaseTrainer(object):
             regularization_loss += torch.sum(abs(param))  # torch.norm(param, p=1)
         return l1_penalty * regularization_loss
 
-    def train(self, resume=False):
-        epoch = 1
+    def train(self, resume=False, repetition_id=0):
+        epoch = 0
         if resume:
             state = load_checkpoint(os.path.join(self.log_path, "latest"))
             epoch = state["epoch"] + 1
             self.distiller.load_state_dict(state["model"])
             self.optimizer.load_state_dict(state["optimizer"])
             self.best_acc = state["best_acc"]
-        while epoch < self.cfg.SOLVER.EPOCHS + 1:
-            self.train_epoch(epoch)
+        while epoch < self.cfg.SOLVER.EPOCHS:
+            self.train_epoch(epoch, repetition_id=repetition_id)
             epoch += 1
-        print(log_msg("Best accuracy:{}".format(self.best_acc), "EVAL"))
+        print(log_msg("repetition_id:{} Best accuracy:{}".format(repetition_id, self.best_acc), "EVAL"))
         with open(os.path.join(self.log_path, "worklog.txt"), "a") as writer:
-            writer.write("best_acc\t" + "{:.2f}".format(float(self.best_acc)))
+            writer.write("repetition_id\t{}\tbest_acc\t{:.4f}".format(repetition_id, float(self.best_acc)) + os.linesep)
+            writer.write("-" * 25 + os.linesep)
+        return self.best_acc
 
-    def train_epoch(self, epoch):
+    def train_epoch(self, epoch, repetition_id=0):
         # lr = adjust_learning_rate(epoch, self.cfg, self.optimizer)
         lr = self.cfg.SOLVER.LR
         train_meters = {
@@ -129,7 +129,7 @@ class BaseTrainer(object):
                 "test_loss": test_loss,
             }
         )
-        self.log(lr, epoch, log_dict)
+        self.log(epoch, log_dict)
         # saving checkpoint
         state = {
             "epoch": epoch,
@@ -137,24 +137,23 @@ class BaseTrainer(object):
             "optimizer": self.optimizer.state_dict(),
             "best_acc": self.best_acc,
         }
-        student_state = {"model": self.distiller.module.student.state_dict()}
-        save_checkpoint(state, os.path.join(self.log_path, "latest"))
-        save_checkpoint(
-            student_state, os.path.join(self.log_path, "student_latest")
-        )
-        if epoch % self.cfg.LOG.SAVE_CHECKPOINT_FREQ == 0:
-            save_checkpoint(
-                state, os.path.join(self.log_path, "epoch_{}".format(epoch))
-            )
-            save_checkpoint(
-                student_state,
-                os.path.join(self.log_path, "student_{}".format(epoch)),
-            )
+        student_state = self.distiller.module.student.state_dict()
+        # save_checkpoint(state, os.path.join(self.log_path, "latest"))
+        # save_checkpoint(
+        #     student_state, os.path.join(self.log_path, "student_latest")
+        # )
+        # if epoch % self.cfg.LOG.SAVE_CHECKPOINT_FREQ == 0:
+        #     save_checkpoint(
+        #         state, os.path.join(self.log_path, "epoch_{}".format(epoch))
+        #     )
+        #     save_checkpoint(
+        #         student_state, os.path.join(self.log_path, "student_{}".format(epoch)),
+        #     )
         # update the best
         if test_acc >= self.best_acc:
-            save_checkpoint(state, os.path.join(self.log_path, "best"))
+            save_checkpoint(state, os.path.join(self.log_path, "state_best_{}".format(repetition_id)))
             save_checkpoint(
-                student_state, os.path.join(self.log_path, "student_best")
+                student_state, os.path.join(self.log_path, "student_best_{}".format(repetition_id))
             )
 
     def train_iter(self, data, target, epoch, train_meters, data_itx: int = 0):  # data_itx参数只在FAKD中使用
@@ -180,7 +179,7 @@ class BaseTrainer(object):
         train_meters["losses"].update(loss.cpu().detach().numpy().mean(), batch_size)
         train_meters["top1"].update(acc1[0], batch_size)
         # print info
-        msg = "Epoch:{}| Time(train):{:.3f}| Loss:{:.4f}| Top-1:{:.3f}".format(
+        msg = "Epoch:{}|Time(train):{:.2f}|Loss:{:.2f}|Top-1:{:.2f}".format(
             epoch,
             # train_meters["data_time"].avg,
             train_meters["training_time"].avg,

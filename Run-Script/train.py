@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+from statistics import mean, pstdev
 
 import torch
 
@@ -14,7 +15,6 @@ from distilllib.models import model_dict
 
 def main(cfg, resume, opts):
     os.environ["CUDA_VISIBLE_DEVICES"] = cfg.EXPERIMENT.GPU_IDS
-    setup_seed(cfg.EXPERIMENT.SEED)
     experiment_name = cfg.EXPERIMENT.NAME
     if experiment_name == "":
         experiment_name = cfg.EXPERIMENT.TAG
@@ -41,43 +41,36 @@ def main(cfg, resume, opts):
     val_loader = get_data_loader_from_dataset('../dataset/{}_test.npz'.format(cfg.DATASET.TYPE),
                                               cfg.DATASET.TEST.BATCH_SIZE)
 
-    # vanilla
-    if cfg.DISTILLER.TYPE == "NONE":
-        model_student = model_dict[cfg.DISTILLER.STUDENT][0](
-            channels=cfg.DATASET.CHANNELS, points=cfg.DATASET.POINTS, num_classes=cfg.DATASET.NUM_CLASSES)
-        distiller = distiller_dict[cfg.DISTILLER.TYPE](model_student)
-    # distillation
-    else:
-        print(log_msg("Loading teacher model", "INFO"))
-        net, pretrain_model_path = model_dict[cfg.DISTILLER.TEACHER]
-        assert (pretrain_model_path is not None), "no pretrain model for teacher {}".format(cfg.DISTILLER.TEACHER)
-        model_teacher = net(
-            channels=cfg.DATASET.CHANNELS, points=cfg.DATASET.POINTS, num_classes=cfg.DATASET.NUM_CLASSES)
-        model_teacher.load_state_dict(load_checkpoint(pretrain_model_path))
+    best_acc_list = []
+    for repetition_id in range(cfg.EXPERIMENT.REPETITION_NUM):
+        setup_seed(cfg.EXPERIMENT.SEED + repetition_id)
+        # vanilla
+        if cfg.DISTILLER.TYPE == "NONE":
+            model_student = model_dict[cfg.DISTILLER.STUDENT][0](
+                channels=cfg.DATASET.CHANNELS, points=cfg.DATASET.POINTS, num_classes=cfg.DATASET.NUM_CLASSES)
+            distiller = distiller_dict[cfg.DISTILLER.TYPE](model_student)
+        # distillation
+        else:
+            print(log_msg("Loading teacher model", "INFO"))
+            net, pretrain_model_path = model_dict[cfg.DISTILLER.TEACHER]
+            assert (pretrain_model_path is not None), "no pretrain model for teacher {}".format(cfg.DISTILLER.TEACHER)
+            model_teacher = net(
+                channels=cfg.DATASET.CHANNELS, points=cfg.DATASET.POINTS, num_classes=cfg.DATASET.NUM_CLASSES)
+            model_teacher.load_state_dict(load_checkpoint(pretrain_model_path))
 
-        model_student = model_dict[cfg.DISTILLER.STUDENT][0](
-            channels=cfg.DATASET.CHANNELS, points=cfg.DATASET.POINTS, num_classes=cfg.DATASET.NUM_CLASSES)
+            model_student = model_dict[cfg.DISTILLER.STUDENT][0](
+                channels=cfg.DATASET.CHANNELS, points=cfg.DATASET.POINTS, num_classes=cfg.DATASET.NUM_CLASSES)
 
-        distiller = distiller_dict[cfg.DISTILLER.TYPE](
-            model_student, model_teacher, cfg
-        )
-    distiller = torch.nn.DataParallel(distiller.cuda())
-
-    if cfg.DISTILLER.TYPE != "NONE":
-        print(
-            log_msg(
-                "Extra parameters of {}: {}\033[0m".format(
-                    cfg.DISTILLER.TYPE, distiller.module.get_extra_parameters()
-                ),
-                "INFO",
+            distiller = distiller_dict[cfg.DISTILLER.TYPE](
+                model_student, model_teacher, cfg
             )
-        )
+        distiller = torch.nn.DataParallel(distiller.cuda())
 
-    # train
-    trainer = trainer_dict[cfg.SOLVER.TRAINER](
-        experiment_name, distiller, train_loader, val_loader, cfg
-    )
-    trainer.train(resume=resume)
+        # train
+        trainer = trainer_dict[cfg.SOLVER.TRAINER](experiment_name, distiller, train_loader, val_loader, cfg)
+        best_acc = trainer.train(resume=resume, repetition_id=repetition_id)
+        best_acc_list.append(float(best_acc))
+    print("best_acc(mean ± std)\t{:.2f} ± {:.2f}".format(mean(best_acc_list), pstdev(best_acc_list)))
 
 
 if __name__ == "__main__":
