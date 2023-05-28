@@ -34,13 +34,13 @@ if dataset == 'DecMeg2014':
 
 # 恢复预训练模型
 # model = lfcnn(channels=channels, points=points, num_classes=num_classes)  # LFCNN(), VARCNN(), HGRN()
-# model = hgrn(channels=channels, points=points, num_classes=num_classes)  # LFCNN(), VARCNN(), HGRN()
-model = sdt(channels=channels, points=points, num_classes=num_classes)  # LFCNN(), VARCNN(), HGRN()
+model = hgrn(channels=channels, points=points, num_classes=num_classes)  # LFCNN(), VARCNN(), HGRN()
+# model = sdt(channels=channels, points=points, num_classes=num_classes)  # LFCNN(), VARCNN(), HGRN()
 model_name = model.__class__.__name__
 # pretrain_model_path = "../checkpoint/Models_Train/CamCAN_LFCNN_20220616160458_checkpoint.pt"
-# pretrain_model_path = "../checkpoint/Models_Train/DecMeg2014_HGRN_20220616192753_checkpoint.pt"
+pretrain_model_path = "../checkpoint/Models_Train/DecMeg2014_HGRN_20220616192753_checkpoint.pt"
 # pretrain_model_path = "../checkpoint/Models_Train/DecMeg2014_SDT_student"
-pretrain_model_path = "../checkpoint/Models_Train/DecMeg2014_SDT_SCFAKD"
+# pretrain_model_path = "../checkpoint/Models_Train/DecMeg2014_SDT_SCFAKD"
 # pretrain_model_path = "../checkpoint/Models_Train/DecMeg2014_SDT_ShapleyFAKD"
 save_model_name = pretrain_model_path.split('/')[-1]
 if model_name == "SDT":
@@ -63,13 +63,19 @@ channel_db = shelve.open(get_project_path() + '/dataset/grad_info')
 channels_info = channel_db['info']
 channel_db.close()
 
-for mean_class in [0, 1]:
-    result_list = []
-    for sample_id in range(sample_num):
-        result_id = "{}_{}_{}_{}".format(dataset, sample_id, model_name, explainer.explainer_name)
-        result = db[result_id]
-        if result.pred_label == result.truth_label == mean_class:
-            result_list.append(result)
+mean_class = "all"
+# for mean_class in [0, 1]:
+result_list = []
+for sample_id in range(sample_num):
+    result_id = "{}_{}_{}_{}".format(dataset, sample_id, model_name, explainer.explainer_name)
+    result = db[result_id]
+    # if result.pred_label == result.truth_label == mean_class: # 根据标签区分预测正确样本的模型平均特征归因
+    #     result_list.append(result)
+    # if result.pred_label == mean_class:   # 根据标签区分的模型平均特征归因（不分区是否预测正确）
+    #     result_list.append(result)
+    if result.pred_label == result.truth_label:   # 所有预测正确样本的总体特征归因（不分区标签）
+        result_list.append(result)
+    # result_list.append(result)  # 模型的总体特征归因（不分区标签）
 
-    fig, _, _, _ = class_mean_plot(result_list, channels_info, attribution_method=explainer.explainer_name)
-    save_figure(fig, get_project_path() + '/plot/heatmap/', '{}_{}_mean'.format(save_model_name, mean_class))
+fig, _, _, _ = class_mean_plot(result_list, channels_info, attribution_method=explainer.explainer_name)
+save_figure(fig, get_project_path() + '/plot/heatmap/', '{}_{}_mean'.format(save_model_name, mean_class))
