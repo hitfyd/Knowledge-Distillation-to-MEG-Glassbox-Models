@@ -28,7 +28,7 @@ def sc_fakd_loss(data, student, teacher, **kwargs):
     if epoch == 0:
         data = data.cpu().numpy()
         # 初始化扰动数据，生成样本数等于通道数
-        perturbation_data = np.zeros((batch_size, channels, channels, points), dtype=np.float16)
+        perturbation_data = np.zeros((batch_size, channels, channels, points), dtype=np.float32)
         # 填充生成扰动数据
         for channel in range(channels):
             perturbation_data[:, channel, channel, :] = data[:, channel, :]
