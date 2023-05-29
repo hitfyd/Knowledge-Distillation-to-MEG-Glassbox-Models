@@ -22,8 +22,8 @@ CFG.EXPERIMENT.PROJECT = "distill"
 CFG.EXPERIMENT.NAME = ""
 CFG.EXPERIMENT.TAG = "default"
 CFG.EXPERIMENT.SEED = 3407  # 0-best; 1-worst; 3407
-CFG.EXPERIMENT.GPU_IDS = "1"    # Only one GPU is used
-CFG.EXPERIMENT.REPETITION_NUM = 3   # 随机数种子随重复次数的增加而自增
+CFG.EXPERIMENT.GPU_IDS = "0"    # Only one GPU is used
+CFG.EXPERIMENT.REPETITION_NUM = 5   # 随机数种子随重复次数的增加而自增
 
 # Dataset
 CFG.DATASET = CN()
@@ -57,7 +57,7 @@ CFG.SOLVER.TYPE = "SGD"
 CFG.LOG = CN()
 # CFG.LOG.SAVE_CHECKPOINT_FREQ = 20
 CFG.LOG.PREFIX = "./output"
-CFG.LOG.WANDB = True
+CFG.LOG.WANDB = False
 
 # Distillation Methods
 

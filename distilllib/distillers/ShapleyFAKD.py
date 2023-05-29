@@ -30,7 +30,7 @@ def shapley_fakd_loss(data, student, teacher, M, **kwargs):
     batch_size, channels, points = data.size()
     window_length = points
     features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
-    if epoch >= 1:
+    if epoch >= 0:
         data = data.cpu().numpy()
 
         S1 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float16)

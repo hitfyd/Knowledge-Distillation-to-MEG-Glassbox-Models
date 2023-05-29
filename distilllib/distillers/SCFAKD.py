@@ -25,7 +25,7 @@ def sc_fakd_loss(data, student, teacher, **kwargs):
     current_device = torch.cuda.current_device()
     devices_num = torch.cuda.device_count()
     batch_size, channels, points = data.size()
-    if epoch == 1:
+    if epoch == 0:
         data = data.cpu().numpy()
         # 初始化扰动数据，生成样本数等于通道数
         perturbation_data = np.zeros((batch_size, channels, channels, points), dtype=np.float16)

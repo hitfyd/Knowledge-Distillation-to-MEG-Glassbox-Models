@@ -91,8 +91,8 @@ class BaseTrainer(object):
             epoch += 1
         print(log_msg("repetition_id:{} Best accuracy:{}".format(repetition_id, self.best_acc), "EVAL"))
         with open(os.path.join(self.log_path, "worklog.txt"), "a") as writer:
-            writer.write("repetition_id\t{}\tbest_acc\t{:.4f}".format(repetition_id, float(self.best_acc)) + os.linesep)
-            writer.write("-" * 25 + os.linesep)
+            writer.write("repetition_id:{}\tbest_acc:{:.4f}".format(repetition_id, float(self.best_acc)))
+            writer.write(os.linesep + "-" * 25 + os.linesep)
         return self.best_acc
 
     def train_epoch(self, epoch, repetition_id=0):
