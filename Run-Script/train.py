@@ -72,9 +72,9 @@ def main(cfg, resume, opts):
         best_acc_l.append(float(best_acc))
     print(log_msg("best_acc(mean±std)\t{:.2f} ± {:.2f}\t{}".format(mean(best_acc_l), pstdev(best_acc_l), best_acc_l), "INFO"))
     with open(os.path.join(trainer.log_path, "worklog.txt"), "a") as writer:
-        writer.write("best_acc(mean±std)\t{:.2f} ± {:.2f}\t{}".format(mean(best_acc_l), pstdev(best_acc_l), best_acc_l))
-        writer.write(os.linesep + "-" * 25 + os.linesep)
         writer.write("CONFIG:\n{}".format(cfg.dump()))
+        writer.write(os.linesep + "-" * 25 + os.linesep)
+        writer.write("best_acc(mean±std)\t{:.2f} ± {:.2f}\t{}".format(mean(best_acc_l), pstdev(best_acc_l), best_acc_l))
         writer.write(os.linesep + "-" * 25 + os.linesep)
 
 

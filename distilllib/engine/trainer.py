@@ -25,6 +25,7 @@ class BaseTrainer(object):
         self.val_loader = val_loader
         self.optimizer = self.init_optimizer(cfg)
         self.best_acc = -1
+        self.best_epoch = 0
 
         username = getpass.getuser()
         # init loggers
@@ -59,6 +60,7 @@ class BaseTrainer(object):
             wandb.log(log_dict)
         if log_dict["test_acc"] > self.best_acc:
             self.best_acc = log_dict["test_acc"]
+            self.best_epoch = epoch
             if self.cfg.LOG.WANDB:
                 wandb.run.summary["best_acc"] = self.best_acc
         # worklog.txt
@@ -89,9 +91,11 @@ class BaseTrainer(object):
         while epoch < self.cfg.SOLVER.EPOCHS:
             self.train_epoch(epoch, repetition_id=repetition_id)
             epoch += 1
-        print(log_msg("repetition_id:{} Best accuracy:{}".format(repetition_id, self.best_acc), "EVAL"))
+        print(log_msg("repetition_id:{} Best accuracy:{} Epoch:{}".
+                      format(repetition_id, self.best_acc, self.best_epoch), "EVAL"))
         with open(os.path.join(self.log_path, "worklog.txt"), "a") as writer:
-            writer.write("repetition_id:{}\tbest_acc:{:.4f}".format(repetition_id, float(self.best_acc)))
+            writer.write("repetition_id:{}\tbest_acc:{:.4f}\tepoch:{}".
+                         format(repetition_id, float(self.best_acc), self.best_epoch))
             writer.write(os.linesep + "-" * 25 + os.linesep)
         return self.best_acc
 
@@ -131,26 +135,14 @@ class BaseTrainer(object):
         )
         self.log(epoch, log_dict)
         # saving checkpoint
-        state = {
-            "epoch": epoch,
-            "model": self.distiller.state_dict(),
-            "optimizer": self.optimizer.state_dict(),
-            "best_acc": self.best_acc,
-        }
-        student_state = self.distiller.module.student.state_dict()
-        # save_checkpoint(state, os.path.join(self.log_path, "latest"))
-        # save_checkpoint(
-        #     student_state, os.path.join(self.log_path, "student_latest")
-        # )
-        # if epoch % self.cfg.LOG.SAVE_CHECKPOINT_FREQ == 0:
-        #     save_checkpoint(
-        #         state, os.path.join(self.log_path, "epoch_{}".format(epoch))
-        #     )
-        #     save_checkpoint(
-        #         student_state, os.path.join(self.log_path, "student_{}".format(epoch)),
-        #     )
-        # update the best
         if test_acc >= self.best_acc:
+            state = {
+                "epoch": epoch,
+                "model": self.distiller.state_dict(),
+                "optimizer": self.optimizer.state_dict(),
+                "best_acc": self.best_acc,
+            }
+            student_state = self.distiller.module.student.state_dict()
             save_checkpoint(state, os.path.join(self.log_path, "state_best_{}".format(repetition_id)))
             save_checkpoint(
                 student_state, os.path.join(self.log_path, "student_best_{}".format(repetition_id))

@@ -1,42 +1,42 @@
 export PYTHONPATH=$PYTHONPATH:../
 
 # Dataset: CamCAN; Vanilla
-python train.py --cfg ../configs/CamCAN/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/CamCAN/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 512
-python train.py --cfg ../configs/CamCAN/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 1024
+#python train.py --cfg ../configs/CamCAN/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 256
+#python train.py --cfg ../configs/CamCAN/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/CamCAN/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 1024
 #python train.py --cfg ../configs/CamCAN/Vanilla/LFCNN.yaml
 
 # Dataset: CamCAN; Teacher: lfcnn; Student: soft decision tree
-python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 8
-
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 256 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 50
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 512 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 50
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 1024 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 50
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 256 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 50
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 512 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 50
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 1024 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 50
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 256 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 75
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 512 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 75
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 1024 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 75
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 256 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 75
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 512 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 75
-python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 1024 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 75
-
-python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
-
-python train.py --cfg ../configs/CamCAN/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/CamCAN/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
-python train.py --cfg ../configs/CamCAN/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
+#python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 8
+#
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 256 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 50
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 512 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 50
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 1024 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 50
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 256 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 50
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 512 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 50
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 1024 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 50
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 256 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 75
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 512 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 75
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 1024 ESKD.TEMPERATURE 4  ESKD.STOP_EPOCH 75
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 256 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 75
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 512 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 75
+#python train.py --cfg ../configs/CamCAN/ESKD/lfcnn_sdt.yaml SOLVER.BATCH_SIZE 1024 ESKD.TEMPERATURE 8  ESKD.STOP_EPOCH 75
+#
+#python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
+#
+#python train.py --cfg ../configs/CamCAN/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+#python train.py --cfg ../configs/CamCAN/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/CamCAN/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
 
 python train.py --cfg ../configs/CamCAN/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 4
 python train.py --cfg ../configs/CamCAN/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 4
@@ -45,11 +45,17 @@ python train.py --cfg ../configs/CamCAN/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 25
 python train.py --cfg ../configs/CamCAN/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
 python train.py --cfg ../configs/CamCAN/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 8
 
-python train.py --cfg ../configs/CamCAN/SCFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/CamCAN/SCFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/CamCAN/SCFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+#python train.py --cfg ../configs/CamCAN/SCFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
 
 python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
 python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+
+# Dataset: CamCAN; Teacher: varcnn; Student: soft decision tree
+
+
+# Dataset: CamCAN; Teacher: hgrn; Student: soft decision tree
+
 
 # Dataset: DecMeg2014; Vanilla
 python train.py --cfg ../configs/DecMeg2014/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 128
