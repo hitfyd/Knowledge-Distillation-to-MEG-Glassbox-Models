@@ -15,40 +15,6 @@ def fa_loss(input_data, target):
     return loss_fa
 
 
-perturbation_data_list = []
-features_teacher_list = []
-
-
-# 不同归因算法的不同在于扰动数据的生成方法不同，这里将所有样本对应的扰动数据只在第一轮生成一次，其余轮不再重新生成；教师模型的归因特征矩阵也只在第一轮计算
-def sc_fakd_loss(data, student, teacher, **kwargs):
-    epoch, data_itx = kwargs["epoch"], kwargs["data_itx"]
-    current_device = torch.cuda.current_device()
-    devices_num = torch.cuda.device_count()
-    batch_size, channels, points = data.size()
-    if epoch == 0:
-        data = data.cpu().numpy()
-        # 初始化扰动数据，生成样本数等于通道数
-        perturbation_data = np.zeros((batch_size, channels, channels, points), dtype=np.float16)
-        # 填充生成扰动数据
-        for channel in range(channels):
-            perturbation_data[:, channel, channel, :] = data[:, channel, :]
-        perturbation_data = perturbation_data.reshape(batch_size * channels, channels, points)
-        # 计算每个通道的权重值
-        features_student = predict(student, perturbation_data)
-        features_teacher = predict(teacher, perturbation_data, eval=True)
-        loss_fakd = fa_loss(features_student.view(batch_size, channels, -1),
-                            features_teacher.view(batch_size, channels, -1))
-
-        perturbation_data_list.append(perturbation_data)
-        features_teacher_list.append(features_teacher)
-    else:
-        list_index = data_itx * devices_num + current_device
-        features_student = predict(student, perturbation_data_list[list_index])
-        loss_fakd = fa_loss(features_student.view(batch_size, channels, -1),
-                            features_teacher_list[list_index].view(batch_size, channels, -1).cuda(current_device))
-    return loss_fakd
-
-
 class SCFAKD(Distiller):
     """Distilling the Knowledge in a Neural Network"""
 
@@ -59,6 +25,9 @@ class SCFAKD(Distiller):
         self.ce_loss_weight = cfg.SCFAKD.LOSS.CE_WEIGHT
         self.kd_loss_weight = cfg.SCFAKD.LOSS.KD_WEIGHT
         self.fa_loss_weight = cfg.SCFAKD.LOSS.FA_WEIGHT
+        self.epochs = cfg.SOLVER.EPOCHS
+        self.perturbation_data_l = []
+        self.features_teacher_l = []
 
     def forward_train(self, data, target, **kwargs):
         logits_student, penalty = self.student(data, is_training_data=True)
@@ -67,7 +36,7 @@ class SCFAKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_fa = self.fa_loss_weight * sc_fakd_loss(data, self.student, self.teacher, **kwargs)
+        loss_fa = self.fa_loss_weight * self.sc_fakd_loss(data, self.student, self.teacher, **kwargs)
 
         if self.with_kd:
             loss_kd = self.kd_loss_weight * kd_loss(logits_student, logits_teacher, self.temperature)
@@ -83,3 +52,32 @@ class SCFAKD(Distiller):
             }
 
         return logits_student, losses_dict
+
+    # 不同归因算法的不同在于扰动数据的生成方法不同，这里将所有样本对应的扰动数据只在第一轮生成一次，其余轮不再重新生成；教师模型的归因特征矩阵也只在第一轮计算
+    def sc_fakd_loss(self, data, student, teacher, **kwargs):
+        epoch, data_itx = kwargs["epoch"], kwargs["data_itx"]
+        current_device = torch.cuda.current_device()
+        devices_num = torch.cuda.device_count()
+        batch_size, channels, points = data.size()
+        if epoch == 0:
+            data = data.cpu().numpy()
+            # 初始化扰动数据，生成样本数等于通道数
+            perturbation_data = np.zeros((batch_size, channels, channels, points), dtype=np.float16)
+            # 填充生成扰动数据
+            for channel in range(channels):
+                perturbation_data[:, channel, channel, :] = data[:, channel, :]
+            perturbation_data = perturbation_data.reshape(batch_size * channels, channels, points)
+            # 计算每个通道的权重值
+            features_student = predict(student, perturbation_data)
+            features_teacher = predict(teacher, perturbation_data, eval=True)
+            loss_fakd = fa_loss(features_student.view(batch_size, channels, -1),
+                                features_teacher.view(batch_size, channels, -1))
+
+            self.perturbation_data_l.append(perturbation_data)
+            self.features_teacher_l.append(features_teacher)
+        else:
+            list_index = data_itx * devices_num + current_device
+            features_student = predict(student, self.perturbation_data_l[list_index])
+            loss_fakd = fa_loss(features_student.view(batch_size, channels, -1),
+                                self.features_teacher_l[list_index].view(batch_size, channels, -1).cuda(current_device))
+        return loss_fakd

@@ -16,6 +16,7 @@ from distilllib.models import model_dict
 def main(cfg, resume, opts):
     os.environ["CUDA_VISIBLE_DEVICES"] = cfg.EXPERIMENT.GPU_IDS
     experiment_name = cfg.EXPERIMENT.NAME
+    setup_seed(cfg.EXPERIMENT.SEED)
     if experiment_name == "":
         experiment_name = cfg.EXPERIMENT.TAG
     tags = cfg.EXPERIMENT.TAG.split(",")
@@ -43,7 +44,6 @@ def main(cfg, resume, opts):
 
     best_acc_l = []
     for repetition_id in range(cfg.EXPERIMENT.REPETITION_NUM):
-        setup_seed(cfg.EXPERIMENT.SEED + repetition_id)
         # vanilla
         if cfg.DISTILLER.TYPE == "NONE":
             model_student = model_dict[cfg.DISTILLER.STUDENT][0](

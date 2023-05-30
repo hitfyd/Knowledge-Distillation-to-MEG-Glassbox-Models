@@ -21,9 +21,9 @@ CFG.EXPERIMENT = CN()
 CFG.EXPERIMENT.PROJECT = "distill"
 CFG.EXPERIMENT.NAME = ""
 CFG.EXPERIMENT.TAG = "default"
-CFG.EXPERIMENT.SEED = 3407  # 0-best; 1-worst; 3407
-CFG.EXPERIMENT.GPU_IDS = "0"    # Only one GPU is used
-CFG.EXPERIMENT.REPETITION_NUM = 5   # 随机数种子随重复次数的增加而自增
+CFG.EXPERIMENT.SEED = 0  # Random number seeds. It is beneficial to the repeatability of the experiment.
+CFG.EXPERIMENT.GPU_IDS = "0, 1"    # List of GPUs used
+CFG.EXPERIMENT.REPETITION_NUM = 5   # Number of repetition times
 
 # Dataset
 CFG.DATASET = CN()
@@ -46,7 +46,7 @@ CFG.SOLVER = CN()
 CFG.SOLVER.TRAINER = "base"
 CFG.SOLVER.BATCH_SIZE = 1024   # Grid search
 CFG.SOLVER.EPOCHS = 100
-CFG.SOLVER.LR = 0.003     # Grid search
+CFG.SOLVER.LR = 0.003
 # CFG.SOLVER.LR_DECAY_STAGES = [150, 180, 210]
 # CFG.SOLVER.LR_DECAY_RATE = 0.1
 CFG.SOLVER.WEIGHT_DECAY = 0.0005
