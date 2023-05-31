@@ -64,12 +64,15 @@ python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH
 python train.py --cfg ../configs/DecMeg2014/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 128
 python train.py --cfg ../configs/DecMeg2014/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 256
 python train.py --cfg ../configs/DecMeg2014/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 512
+python train.py --cfg ../configs/DecMeg2014/Vanilla/SDT.yaml  SOLVER.BATCH_SIZE 1024
 python train.py --cfg ../configs/DecMeg2014/Vanilla/LFCNN.yaml  SOLVER.BATCH_SIZE 128
 python train.py --cfg ../configs/DecMeg2014/Vanilla/LFCNN.yaml  SOLVER.BATCH_SIZE 256
 python train.py --cfg ../configs/DecMeg2014/Vanilla/LFCNN.yaml  SOLVER.BATCH_SIZE 512
+python train.py --cfg ../configs/DecMeg2014/Vanilla/LFCNN.yaml  SOLVER.BATCH_SIZE 1024
 python train.py --cfg ../configs/DecMeg2014/Vanilla/VARCNN.yaml  SOLVER.BATCH_SIZE 128
 python train.py --cfg ../configs/DecMeg2014/Vanilla/VARCNN.yaml  SOLVER.BATCH_SIZE 256
 python train.py --cfg ../configs/DecMeg2014/Vanilla/VARCNN.yaml  SOLVER.BATCH_SIZE 512
+python train.py --cfg ../configs/DecMeg2014/Vanilla/LFCNN.yaml  SOLVER.BATCH_SIZE 1024
 #python train.py --cfg ../configs/DecMeg2014/Vanilla/HGRN.yaml
 
 # Dataset: DecMeg2014; Teacher: lfcnn; Student: soft decision tree
