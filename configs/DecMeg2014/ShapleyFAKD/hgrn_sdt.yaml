@@ -2,7 +2,6 @@ EXPERIMENT:
   NAME: ""
   TAG: "shapleyfakd,hgrn,sdt"
   PROJECT: "DecMeg2014_baselines"
-  REPETITION_NUM: 3
 DATASET:
   TYPE: "DecMeg2014"
   CHANNELS: 204
