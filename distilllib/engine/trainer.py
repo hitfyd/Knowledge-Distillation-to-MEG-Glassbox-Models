@@ -65,9 +65,7 @@ class BaseTrainer(object):
                 wandb.run.summary["best_acc"] = self.best_acc
         # worklog.txt
         with open(os.path.join(self.log_path, "worklog.txt"), "a") as writer:
-            lines = [
-                "epoch: {}\t".format(epoch),
-            ]
+            lines = ["epoch: {}\t".format(epoch), ]
             for k, v in log_dict.items():
                 lines.append("{}: {:.4f}\t".format(k, v))
             lines.append(os.linesep)

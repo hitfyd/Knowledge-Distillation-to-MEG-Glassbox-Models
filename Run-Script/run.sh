@@ -37,7 +37,7 @@ export PYTHONPATH=$PYTHONPATH:../
 #python train.py --cfg ../configs/CamCAN/SCFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
 
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
 
 
@@ -87,6 +87,6 @@ python train.py --cfg ../configs/DecMeg2014/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE
 python train.py --cfg ../configs/DecMeg2014/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 8
 python train.py --cfg ../configs/DecMeg2014/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
 
-python train.py --cfg ../configs/CamCAN/SCFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 128
+#python train.py --cfg ../configs/CamCAN/SCFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 128
 
 python train.py --cfg ../configs/CamCAN/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 128

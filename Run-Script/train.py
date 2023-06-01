@@ -16,7 +16,6 @@ from distilllib.models import model_dict
 def main(cfg, resume, opts):
     os.environ["CUDA_VISIBLE_DEVICES"] = cfg.EXPERIMENT.GPU_IDS
     experiment_name = cfg.EXPERIMENT.NAME
-    setup_seed(cfg.EXPERIMENT.SEED)
     if experiment_name == "":
         experiment_name = cfg.EXPERIMENT.TAG
     tags = cfg.EXPERIMENT.TAG.split(",")
@@ -36,14 +35,18 @@ def main(cfg, resume, opts):
 
     # cfg & loggers
     show_cfg(cfg)
-    # init dataloader & models
-    train_loader = get_data_loader_from_dataset('../dataset/{}_train.npz'.format(cfg.DATASET.TYPE),
-                                                cfg.SOLVER.BATCH_SIZE)
-    val_loader = get_data_loader_from_dataset('../dataset/{}_test.npz'.format(cfg.DATASET.TYPE),
-                                              cfg.DATASET.TEST.BATCH_SIZE)
 
     best_acc_l = []
     for repetition_id in range(cfg.EXPERIMENT.REPETITION_NUM):
+        # set the random number seed
+        setup_seed(cfg.EXPERIMENT.SEED+repetition_id)
+
+        # init dataloader & models
+        train_loader = get_data_loader_from_dataset('../dataset/{}_train.npz'.format(cfg.DATASET.TYPE),
+                                                    cfg.SOLVER.BATCH_SIZE)
+        val_loader = get_data_loader_from_dataset('../dataset/{}_test.npz'.format(cfg.DATASET.TYPE),
+                                                  cfg.DATASET.TEST.BATCH_SIZE)
+
         # vanilla
         if cfg.DISTILLER.TYPE == "NONE":
             model_student = model_dict[cfg.DISTILLER.STUDENT][0](
