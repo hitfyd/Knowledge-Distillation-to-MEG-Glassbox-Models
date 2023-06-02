@@ -89,7 +89,7 @@ def shapley_fakd_loss_parallel(data, student, teacher, M, **kwargs):
     S2 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float16)
 
     @ray.remote
-    def run(feature):
+    def run(feature, data_):
         S1_r = np.zeros((batch_size, M, channels, points), dtype=np.float16)
         S2_r = np.zeros((batch_size, M, channels, points), dtype=np.float16)
         for m in range(M):
@@ -103,14 +103,15 @@ def shapley_fakd_loss_parallel(data, student, teacher, M, **kwargs):
                 reference_index = (index + np.random.randint(1, batch_size)) % batch_size
                 # assert index != reference_index # 参考样本不能是样本本身
                 # reference_input = data[reference_index]
-                S1_r[index, m] = S2_r[index, m] = feature_mark * data[index] + ~feature_mark * data[reference_index]
+                S1_r[index, m] = S2_r[index, m] = feature_mark * data_[index] + ~feature_mark * data_[reference_index]
                 S2_r[index, m][channel_list[feature],
                 point_start_list[feature]:point_start_list[feature] + window_length] = \
-                    data[index][channel_list[feature],
+                    data_[index][channel_list[feature],
                     point_start_list[feature]:point_start_list[feature] + window_length]
         return feature, S1_r, S2_r
 
-    rs = [run.remote(feature) for feature in range(features_num)]
+    data_ = ray.put(data)
+    rs = [run.remote(feature, data_) for feature in range(features_num)]
     rs_list = ray.get(rs)
     for feature, S1_r, S2_r in rs_list:
         S1[:, feature] = S1_r
