@@ -92,3 +92,7 @@ python train.py --cfg ../configs/DecMeg2014/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE
 #python train.py --cfg ../configs/DecMeg2014/SCFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 128
 
 python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 128
+
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512
