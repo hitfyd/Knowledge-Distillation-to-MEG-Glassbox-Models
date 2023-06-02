@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
-import ray
+# import ray
 
 from .KD import kd_loss
 from .SCFAKD import fa_loss
@@ -144,14 +144,14 @@ class ShapleyFAKD(Distiller):
         self.kd_loss_weight = cfg.ShapleyFAKD.LOSS.KD_WEIGHT
         self.fa_loss_weight = cfg.ShapleyFAKD.LOSS.FA_WEIGHT
 
-        if not ray.is_initialized():
-            ray.init(num_gpus=0, num_cpus=16,  # 计算资源
-                     local_mode=False,  # 是否启动串行模型，用于调试
-                     ignore_reinit_error=True,  # 重复启动不视为错误
-                     include_dashboard=False,  # 是否启动仪表盘
-                     configure_logging=False,  # 不配置日志
-                     log_to_driver=False,  # 日志记录不配置到driver
-                     )
+        # if not ray.is_initialized():
+        #     ray.init(num_gpus=0, num_cpus=16,  # 计算资源
+        #              local_mode=False,  # 是否启动串行模型，用于调试
+        #              ignore_reinit_error=True,  # 重复启动不视为错误
+        #              include_dashboard=False,  # 是否启动仪表盘
+        #              configure_logging=False,  # 不配置日志
+        #              log_to_driver=False,  # 日志记录不配置到driver
+        #              )
 
     def forward_train(self, data, target, **kwargs):
         logits_student, penalty = self.student(data, is_training_data=True)
@@ -160,7 +160,7 @@ class ShapleyFAKD(Distiller):
 
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
-        loss_fa = self.fa_loss_weight * shapley_fakd_loss_parallel(data, self.student, self.teacher, self.M, **kwargs)
+        loss_fa = self.fa_loss_weight * shapley_fakd_loss(data, self.student, self.teacher, self.M, **kwargs)
 
         if self.with_kd:
             loss_kd = self.kd_loss_weight * kd_loss(logits_student, logits_teacher, self.temperature)
