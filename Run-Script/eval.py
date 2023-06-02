@@ -1,4 +1,5 @@
 import argparse
+
 import torch
 import torch.backends.cudnn as cudnn
 
@@ -7,7 +8,6 @@ cudnn.benchmark = True
 from distilllib.distillers import Vanilla
 from distilllib.models import model_dict
 from distilllib.engine.utils import load_checkpoint, validate, get_data_loader_from_dataset
-from distilllib.engine.cfg import CFG as cfg
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
