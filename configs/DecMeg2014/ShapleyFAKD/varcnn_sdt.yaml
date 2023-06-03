@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "shapleyfakd,lfcnn,sdt"
+  TAG: "shapleyfakd,varcnn,sdt"
   PROJECT: "DecMeg2014_baselines"
 DATASET:
   TYPE: "DecMeg2014"
@@ -9,7 +9,7 @@ DATASET:
   NUM_CLASSES: 2
 DISTILLER:
   TYPE: "ShapleyFAKD"
-  TEACHER: "DecMeg2014_lfcnn"
+  TEACHER: "DecMeg2014_varcnn"
   STUDENT: "sdt"
 SOLVER:
   BATCH_SIZE: 256
