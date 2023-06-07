@@ -34,57 +34,57 @@ export PYTHONPATH=$PYTHONPATH:../
 
 
 # Dataset: CamCAN; Teacher: varcnn; Student: soft decision tree
-python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 8
-
-python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 8
 #
-python train.py --cfg ../configs/CamCAN/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/CamCAN/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
-python train.py --cfg ../configs/CamCAN/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
-
-python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 4
-python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 4
-python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 4
-python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 8
-python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
-python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 8
+#python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
+#
+#python train.py --cfg ../configs/CamCAN/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+#python train.py --cfg ../configs/CamCAN/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/CamCAN/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
+#
+#python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 4
+#python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 4
+#python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 4
+#python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 8
+#python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
+#python train.py --cfg ../configs/CamCAN/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 8
 
 
 # Dataset: CamCAN; Teacher: hgrn; Student: soft decision tree
-python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 8
-
-python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512  KD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 KD.TEMPERATURE 8
 #
-python train.py --cfg ../configs/CamCAN/MSEKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/CamCAN/MSEKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512
-python train.py --cfg ../configs/CamCAN/MSEKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024
-
-python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 4
-python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 4
-python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 4
-python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 8
-python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
-python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 8
+#python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/CamCAN/GKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
+#
+#python train.py --cfg ../configs/CamCAN/MSEKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256
+#python train.py --cfg ../configs/CamCAN/MSEKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/CamCAN/MSEKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024
+#
+#python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 4
+#python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 4
+#python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 4
+#python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 8
+#python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
+#python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 8
 
 
 # Dataset: DecMeg2014; Vanilla
@@ -103,57 +103,57 @@ python train.py --cfg ../configs/CamCAN/DKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 102
 
 
 # Dataset: DecMeg2014; Teacher: lfcnn; Student: soft decision tree
-python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 KD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024  KD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
-python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 KD.TEMPERATURE 8
-python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024  KD.TEMPERATURE 8
-
-python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 KD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 KD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/KD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024  KD.TEMPERATURE 8
 #
-python train.py --cfg ../configs/DecMeg2014/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/DecMeg2014/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
-python train.py --cfg ../configs/DecMeg2014/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
-
-python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 4
-python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 4
-python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 4
-python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 8
-python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
-python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 8
+#python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/GKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
+#
+#python train.py --cfg ../configs/DecMeg2014/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+#python train.py --cfg ../configs/DecMeg2014/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/DecMeg2014/MSEKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
+#
+#python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 4
+#python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 4
+#python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 4
+#python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 8
+#python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
+#python train.py --cfg ../configs/DecMeg2014/DKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 8
 
 
 # Dataset: DecMeg2014; Teacher: varcnn; Student: soft decision tree
-python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 KD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024  KD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
-python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 KD.TEMPERATURE 8
-python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024  KD.TEMPERATURE 8
-
-python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
-python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
-python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 KD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024  KD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256  KD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 KD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024  KD.TEMPERATURE 8
 #
-python train.py --cfg ../configs/DecMeg2014/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/DecMeg2014/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
-python train.py --cfg ../configs/DecMeg2014/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
-
-python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 4
-python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 4
-python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 4
-python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 8
-python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
-python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 8
+#python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 4
+#python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 GKD.TEMPERATURE 8
+#python train.py --cfg ../configs/DecMeg2014/GKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 GKD.TEMPERATURE 8
+#
+#python train.py --cfg ../configs/DecMeg2014/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+#python train.py --cfg ../configs/DecMeg2014/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/DecMeg2014/MSEKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024
+#
+#python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 4
+#python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 4
+#python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 4
+#python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256 DKD.T 8
+#python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512 DKD.T 8
+#python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 1024 DKD.T 8
 
 
 # Dataset: DecMeg2014; Teacher: hgrn; Student: soft decision tree
@@ -184,10 +184,12 @@ python train.py --cfg ../configs/DecMeg2014/DKD/varcnn_sdt.yaml  SOLVER.BATCH_SI
 
 
 # FAKD
-python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
-python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
-
-python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
-python train.py --cfg ../configs/CamCAN/ShapleyFAKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
-python train.py --cfg ../configs/CamCAN/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256
+#python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+#python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD+KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256
+#
+#python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/CamCAN/ShapleyFAKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
+#python train.py --cfg ../configs/CamCAN/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD+KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
