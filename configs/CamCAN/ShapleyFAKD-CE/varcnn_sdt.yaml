@@ -1,0 +1,21 @@
+EXPERIMENT:
+  NAME: ""
+  TAG: "shapleyfakd-ce,varcnn,sdt"
+  PROJECT: "CamCAN_baselines"
+DATASET:
+  TYPE: "CamCAN"
+  CHANNELS: 204
+  POINTS: 100
+  NUM_CLASSES: 2
+DISTILLER:
+  TYPE: "ShapleyFAKD"
+  TEACHER: "CamCAN_varcnn"
+  STUDENT: "sdt"
+SOLVER:
+  BATCH_SIZE: 512
+  EPOCHS: 20
+  LR: 0.003
+ShapleyFAKD:
+  LOSS:
+    CE_WEIGHT: 0.0
+    FA_WEIGHT: 1000
