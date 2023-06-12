@@ -202,12 +202,12 @@ export PYTHONPATH=$PYTHONPATH:../
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD-CE/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD-CE/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512
 
-python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 64 SOLVER.LR 0.003
-python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 64 SOLVER.LR 0.03
-python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 128 SOLVER.LR 0.003
-python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 128 SOLVER.LR 0.03
-python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 SOLVER.LR 0.03
+#python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 64 SOLVER.LR 0.003
+python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 64 SOLVER.LR 0.0003
+#python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 128 SOLVER.LR 0.003
+python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 128 SOLVER.LR 0.0003
+python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 SOLVER.LR 0.0003
 #python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 ShapleyFAKD.LOSS.FA_WEIGHT 10
 #python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 ShapleyFAKD.LOSS.FA_WEIGHT 100
-#python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 ShapleyFAKD.M 2
-#python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256 ShapleyFAKD.M 4
+python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 64 ShapleyFAKD.M 2
+python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 64 ShapleyFAKD.M 4
