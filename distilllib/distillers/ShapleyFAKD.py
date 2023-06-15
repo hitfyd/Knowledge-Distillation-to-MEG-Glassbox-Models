@@ -4,9 +4,15 @@ import torch.nn.functional as F
 import ray
 
 from .KD import kd_loss
-from .SCFAKD import fa_loss
 from ._base import Distiller
 from ..engine.utils import predict
+
+
+def fa_loss(input_data, target):
+    input_data = F.normalize(input_data, p=2)
+    target = F.normalize(target, p=2)
+    loss_fa = F.mse_loss(input_data, target, reduction="mean")
+    return loss_fa
 
 
 def feature_segment(channels, points, window_length):
