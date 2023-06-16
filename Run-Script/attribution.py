@@ -2,15 +2,78 @@ import os
 import shelve
 
 import numpy as np
+import ray
+import torch
 
 from Util import get_project_path
 from Util.GeneralUtil import save_figure
 from Util.TorchUtil import get_data_labels_from_dataset
-from attributionlib import class_mean_plot
+from attributionlib import class_mean_plot, AttributionResult
 from attributionlib.explainer.SingleChannel import SingleChannelExplainer
-from distilllib.engine.utils import setup_seed, load_checkpoint
+from distilllib.engine.utils import setup_seed, load_checkpoint, predict, individual_predict
 from distilllib.models import sdt
 from distilllib.models.DNNClassifier import hgrn, lfcnn
+
+
+def feature_segment(channels, points, window_length):
+    channel_windows_num = int(points / window_length)  # 需要计算的通道特征数和时间特征数，总特征数为c_features x p_features
+    features_num = channels * channel_windows_num
+    channel_list, point_start_list = [], []
+    for feature_id in range(features_num):
+        channel_list.append(int(feature_id / channel_windows_num))
+        point_start_list.append(int(feature_id % channel_windows_num * window_length))
+    return features_num, channel_list, point_start_list
+
+
+def shapley_fakd_parallel(data, model_list, M=1):
+    batch_size, channels, points = data.shape
+    window_length = points
+    features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
+
+    S1 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float16)
+    S2 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float16)
+
+    @ray.remote
+    def run(feature, data_r):
+        S1_r = np.zeros((batch_size, M, channels, points), dtype=np.float16)
+        S2_r = np.zeros((batch_size, M, channels, points), dtype=np.float16)
+        for m in range(M):
+            # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
+            feature_mark = np.random.randint(0, 2, features_num, dtype=np.bool_)    # bool_类型不能改为int8类型
+            feature_mark[feature] = 0
+            feature_mark = np.repeat(feature_mark, window_length)
+            feature_mark = np.reshape(feature_mark, (channels, points))  # reshape是view，resize是copy
+            for index in range(batch_size):
+                # 随机选择一个参考样本，用于替换不考虑的特征核
+                reference_index = (index + np.random.randint(1, batch_size)) % batch_size
+                assert index != reference_index # 参考样本不能是样本本身
+                reference_input = data_r[reference_index]
+                S1_r[index, m] = S2_r[index, m] = feature_mark * data_r[index] + ~feature_mark * reference_input
+                S2_r[index, m][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length] = \
+                    data_r[index][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length]
+        return feature, S1_r, S2_r
+
+    data_ = ray.put(data)
+    rs = [run.remote(feature, data_) for feature in range(features_num)]
+    rs_list = ray.get(rs)
+    for feature, S1_r, S2_r in rs_list:
+        S1[:, feature] = S1_r
+        S2[:, feature] = S2_r
+
+    # 计算S1和S2的预测差值
+    S1 = S1.reshape(-1, channels, points)
+    S2 = S2.reshape(-1, channels, points)
+    features_lists = []
+    if not isinstance(model_list, list):
+        model_list = [model_list]
+    for model in model_list:
+        S1_student_preds = predict(model, S1)
+        S2_student_preds = predict(model, S2)
+        features = (S1_student_preds.view(batch_size, features_num, M, -1) -
+                    S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
+        features_lists.append(features)
+    return features_lists
+
 
 # 超参数
 RAND_SEED = 16
@@ -50,12 +113,15 @@ else:
 
 db_path = get_project_path() + '/record/{}_benchmark'.format(dataset)
 db = shelve.open(db_path)
-explainer = SingleChannelExplainer(dataset, label_names, model)
-run_time_list = np.zeros(sample_num, dtype=np.float32)
-auc_list = np.zeros(sample_num, dtype=np.float32)
-for sample_id in range(sample_num):
-    origin_input, truth_label = origin_data[sample_id], labels[sample_id]
-    result = explainer(sample_id, origin_input, truth_label)
+batch_size = 256
+for sample_id in range(0, sample_num, batch_size):
+    origin_input, truth_label = origin_data[sample_id:batch_size], labels[sample_id:batch_size]
+    origin_pred = predict(model, origin_input)
+    origin_pred_label = origin_pred
+    features_lists = shapley_fakd_parallel(origin_input, model)
+    result = AttributionResult(dataset, label_names, sample_id, origin_input, truth_label,
+                               model.__class__.__name__, origin_pred, origin_pred_label,
+                               "Shapley_Channel", features_lists[0], 0)
     db[result.result_id] = result
 
 # 读取通道可视化信息
