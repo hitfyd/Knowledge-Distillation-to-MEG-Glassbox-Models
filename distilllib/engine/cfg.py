@@ -116,6 +116,7 @@ CFG.DKD.WARMUP = 20
 
 # ShapleyFAKD CFG
 CFG.ShapleyFAKD = CN()
+CFG.ShapleyFAKD.PARALLEL = True     # 是否使用ray进行平行加速
 CFG.ShapleyFAKD.M = 1
 CFG.ShapleyFAKD.LOSS = CN()
 CFG.ShapleyFAKD.LOSS.CE_WEIGHT = 1.0     # +KD时为0.1，+DKD时为1，FAKD时为1
