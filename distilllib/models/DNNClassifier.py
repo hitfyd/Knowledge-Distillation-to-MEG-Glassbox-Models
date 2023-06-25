@@ -125,9 +125,11 @@ class LFCNN(nn.Module):
         self.output = nn.Linear(global_spatial_sources * int(global_points / 2), global_classes)
 
     # input data shape：(batch * channels * points)
-    def forward(self, x):
+    def forward(self, x, is_training_data=False):
         x = self.features(x)
         out = self.output(x)
+        if is_training_data:
+            return out, 0.0
         return out
 
 
@@ -178,8 +180,10 @@ class HGRN(nn.Module):
         self.softmax = nn.LogSoftmax(dim=1)
 
     # input data shape：(batch * channels * points)
-    def forward(self, x):
+    def forward(self, x, is_training_data=False):
         x = self.features(x)
         out = self.output(x)
         out = self.softmax(out)
+        if is_training_data:
+            return out, 0.0
         return out

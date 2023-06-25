@@ -16,6 +16,7 @@ def setup_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
     # 尽可能提高确定性
+    torch.backends.cudnn.enabled = False
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     # torch.use_deterministic_algorithms(True)
