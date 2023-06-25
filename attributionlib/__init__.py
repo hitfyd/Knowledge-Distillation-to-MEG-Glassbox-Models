@@ -125,8 +125,9 @@ def class_mean_plot(attribution_results, channels_info, label=0, top_channel_num
     for attribution_result in attribution_results:
         heatmap_list.append(attribution_result.channel_attribution_maps[:, attribution_result.pred_label])
     heatmap_list = np.array(heatmap_list)
-    heatmap = heatmap_list.mean(axis=0)
-    heatmap_channel = (heatmap - np.mean(heatmap)) / (np.std(heatmap))
+    heatmap_channel = heatmap_list.mean(axis=0)
+    heatmap_channel = np.abs(heatmap_channel)
+    # heatmap_channel = (heatmap_channel - np.mean(heatmap_channel)) / (np.std(heatmap_channel))
 
     # 计算地形图中需要突出显示的通道及名称，注意：由于在绘制地形图时两两合并为一个位置，需要保证TOP通道的名称一定显示，其余通道对显示第一个通道的名称
     mask_list = np.zeros(channels//2, dtype=bool)   # 由于通道类型为Grad，在绘制地形图时两两合并为一个位置
@@ -145,6 +146,7 @@ def class_mean_plot(attribution_results, channels_info, label=0, top_channel_num
             names_list.append(channels_info.ch_names[2*channel_index])
 
     # 打印TOP通道及其名称、贡献值
+    print(title)
     print("index\tchannel name\tcontribution value")
     top_channels = {}
     for index in top_channel_index:
@@ -156,16 +158,13 @@ def class_mean_plot(attribution_results, channels_info, label=0, top_channel_num
     axs1 = fig.add_subplot(gridlayout[:, :23])
     axs1_colorbar = fig.add_subplot(gridlayout[:, 23])
 
-    fontsize = 16
-    linewidth = 2
+    fontsize = 10
     # 配色方案
     # 贡献由大到小颜色由深变浅：'plasma' 'viridis'
     # 有浅变深：'summer' 'YlGn' 'YlOrRd'
     # 'Oranges'
     cmap = 'Oranges'
     plt.rcParams['font.size'] = fontsize
-    time_xticks = [0, 25, 50, 75, 100]
-    time_xticklabels = ['-0.2', '0', '0.2', '0.4', '0.6(s)']
 
     fig.suptitle(title, y=0.99, fontsize=fontsize)
 

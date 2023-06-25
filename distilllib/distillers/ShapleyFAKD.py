@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
+import ray
 
 from .KD import kd_loss
 from ._base import Distiller
@@ -130,8 +131,6 @@ class ShapleyFAKD(Distiller):
         self.parallel = cfg.ShapleyFAKD.PARALLEL
 
         if self.parallel:
-            import ray
-
             if not ray.is_initialized():
                 ray.init(num_gpus=0, num_cpus=32,  # 计算资源
                          local_mode=False,  # 是否启动串行模型，用于调试
