@@ -50,7 +50,7 @@ def feature_segment(channels, points, window_length):
     return features_num, channel_list, point_start_list
 
 
-def shapley_fakd_parallel(data, model_list, M=1):
+def shapley_fakd_parallel(data, model_list, reference_dataset, classes=2, window_length=10, M=8):
     if not ray.is_initialized():
         ray.init(num_gpus=0, num_cpus=32,  # 计算资源
                  local_mode=False,  # 是否启动串行模型，用于调试
@@ -60,55 +60,56 @@ def shapley_fakd_parallel(data, model_list, M=1):
                  log_to_driver=False,  # 日志记录不配置到driver
                  )
 
-    batch_size, channels, points = data.shape
-    window_length = points
+    channels, points = data.shape
     features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
+    reference_num = len(reference_dataset)
 
-    S1 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float16)
-    S2 = np.zeros((batch_size, features_num, M, channels, points), dtype=np.float16)
+    S1 = np.zeros((features_num, M, channels, points), dtype=np.float16)
+    S2 = np.zeros((features_num, M, channels, points), dtype=np.float16)
 
     @ray.remote
-    def run(feature, data_r):
-        S1_r = np.zeros((batch_size, M, channels, points), dtype=np.float16)
-        S2_r = np.zeros((batch_size, M, channels, points), dtype=np.float16)
+    def run(feature, data_r, reference_dataset_r):
+        S1_r = np.zeros((M, channels, points), dtype=np.float16)
+        S2_r = np.zeros((M, channels, points), dtype=np.float16)
         for m in range(M):
             # 直接生成0，1数组，最后确保feature位满足要求，并且将数据类型改为Boolean型减少后续矩阵点乘计算量
             feature_mark = np.random.randint(0, 2, features_num, dtype=np.bool_)  # bool_类型不能改为int8类型
             feature_mark[feature] = 0
             feature_mark = np.repeat(feature_mark, window_length)
             feature_mark = np.reshape(feature_mark, (channels, points))  # reshape是view，resize是copy
-            for index in range(batch_size):
-                # 随机选择一个参考样本，用于替换不考虑的特征核
-                reference_index = (index + np.random.randint(1, batch_size)) % batch_size
-                assert index != reference_index  # 参考样本不能是样本本身
-                reference_input = data_r[reference_index]
-                S1_r[index, m] = S2_r[index, m] = feature_mark * data_r[index] + ~feature_mark * reference_input
-                S2_r[index, m][channel_list[feature],
-                point_start_list[feature]:point_start_list[feature] + window_length] = \
-                    data_r[index][channel_list[feature],
-                    point_start_list[feature]:point_start_list[feature] + window_length]
+            # 随机选择一个参考样本，用于替换不考虑的特征核
+            reference_input = reference_dataset_r[np.random.randint(reference_num)]
+            S1_r[m] = S2_r[m] = feature_mark * data_r + ~feature_mark * reference_input
+            S2_r[m][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length] = \
+                data_r[channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length]
         return feature, S1_r, S2_r
 
     data_ = ray.put(data)
-    rs = [run.remote(feature, data_) for feature in range(features_num)]
+    reference_dataset_ = ray.put(reference_dataset)
+    rs = [run.remote(feature, data_, reference_dataset_) for feature in range(features_num)]
     rs_list = ray.get(rs)
     for feature, S1_r, S2_r in rs_list:
-        S1[:, feature] = S1_r
-        S2[:, feature] = S2_r
+        S1[feature] = S1_r
+        S2[feature] = S2_r
 
     # 计算S1和S2的预测差值
     S1 = S1.reshape(-1, channels, points)
     S2 = S2.reshape(-1, channels, points)
-    features_lists = []
+    attribution_map_lists = []
     if not isinstance(model_list, list):
         model_list = [model_list]
     for model in model_list:
-        S1_student_preds = predict(model, S1)
-        S2_student_preds = predict(model, S2)
-        features = (S1_student_preds.view(batch_size, features_num, M, -1) -
-                    S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
-        features_lists.append(features)
-    return features_lists
+        S1_preds = predict(model, S1, batch_size=1024, eval=True)
+        S2_preds = predict(model, S2, batch_size=1024, eval=True)
+        features = (S1_preds.view(features_num, M, -1) -
+                    S2_preds.view(features_num, M, -1)).sum(axis=1) / M
+        features = features.detach().cpu().numpy()
+        attribution_map = np.zeros((channels, points, classes), dtype=np.float32)
+        for feature in range(features_num):
+            attribution_map[channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length]\
+                = features[feature]
+        attribution_map_lists.append(attribution_map)
+    return attribution_map_lists
 
 
 def class_mean_plot(attribution_results, channels_info, label=0, top_channel_num=10):
@@ -127,23 +128,23 @@ def class_mean_plot(attribution_results, channels_info, label=0, top_channel_num
     heatmap_list = np.array(heatmap_list)
     heatmap_channel = heatmap_list.mean(axis=0)
     heatmap_channel = np.abs(heatmap_channel)
-    # heatmap_channel = (heatmap_channel - np.mean(heatmap_channel)) / (np.std(heatmap_channel))
+    heatmap_channel = (heatmap_channel - np.mean(heatmap_channel)) / (np.std(heatmap_channel))
 
     # 计算地形图中需要突出显示的通道及名称，注意：由于在绘制地形图时两两合并为一个位置，需要保证TOP通道的名称一定显示，其余通道对显示第一个通道的名称
-    mask_list = np.zeros(channels//2, dtype=bool)   # 由于通道类型为Grad，在绘制地形图时两两合并为一个位置
+    mask_list = np.zeros(channels // 2, dtype=bool)  # 由于通道类型为Grad，在绘制地形图时两两合并为一个位置
     top_channel_index = np.argsort(-heatmap_channel)[:top_channel_num]
-    names_list = []     # 两两合并后对应的通道名称
-    for channel_index in range(channels//2):
-        if 2*channel_index in top_channel_index:
+    names_list = []  # 两两合并后对应的通道名称
+    for channel_index in range(channels // 2):
+        if 2 * channel_index in top_channel_index:
             mask_list[channel_index] = True
-            names_list.append(channels_info.ch_names[2 * channel_index] + '\n')     # 避免显示标记遮挡通道名称
+            names_list.append(channels_info.ch_names[2 * channel_index] + '\n')  # 避免显示标记遮挡通道名称
             if 2 * channel_index + 1 in top_channel_index:
-                names_list[channel_index] += channels_info.ch_names[2 * channel_index+1] + '\n\n'
-        elif 2*channel_index+1 in top_channel_index:
+                names_list[channel_index] += channels_info.ch_names[2 * channel_index + 1] + '\n\n'
+        elif 2 * channel_index + 1 in top_channel_index:
             mask_list[channel_index] = True
-            names_list.append(channels_info.ch_names[2 * channel_index+1] + '\n')
+            names_list.append(channels_info.ch_names[2 * channel_index + 1] + '\n')
         else:
-            names_list.append(channels_info.ch_names[2*channel_index])
+            names_list.append(channels_info.ch_names[2 * channel_index])
 
     # 打印TOP通道及其名称、贡献值
     print(title)

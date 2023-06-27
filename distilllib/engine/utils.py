@@ -16,7 +16,7 @@ def setup_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
     # 尽可能提高确定性
-    torch.backends.cudnn.enabled = False
+    # torch.backends.cudnn.enabled = False
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     # torch.use_deterministic_algorithms(True)
@@ -101,7 +101,7 @@ def validate(val_loader, distiller):
 
 def predict(model, data, num_classes=2, batch_size=1024, eval=False):
     model.cuda()
-    data = torch.from_numpy(data).cuda()
+    data = torch.from_numpy(data)
     data_split = torch.split(data, batch_size, dim=0)
     output = torch.zeros(len(data), num_classes).cuda()  # 预测的置信度和置信度最大的标签编号
     start = 0
@@ -120,6 +120,7 @@ def predict(model, data, num_classes=2, batch_size=1024, eval=False):
             batch_data = batch_data.float()
             output[start:start + len(batch_data)] = model(batch_data)
             start += len(batch_data)
+    model.train()
     return output
 
 
