@@ -187,10 +187,12 @@ export PYTHONPATH=$PYTHONPATH:../
 #python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256
 #python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
 #python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
-#
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256
 
 #python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD+KD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD+KD/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
@@ -201,6 +203,9 @@ export PYTHONPATH=$PYTHONPATH:../
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD-CE/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD-CE/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 512
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD-CE/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 512
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD-CE/lfcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD-CE/varcnn_sdt.yaml  SOLVER.BATCH_SIZE 256
+python train.py --cfg ../configs/CamCAN/ShapleyFAKD-CE/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 256
 
 #python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 64 SOLVER.LR 0.003
 #python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BATCH_SIZE 64 SOLVER.LR 0.0003
@@ -214,5 +219,5 @@ export PYTHONPATH=$PYTHONPATH:../
 
 # self-distillation
 #python train.py --cfg ../configs/CamCAN/ShapleyFAKD/varcnn_varcnn.yaml
-python train.py --cfg ../configs/CamCAN/ShapleyFAKD/varcnn_hgrn.yaml  SOLVER.BATCH_SIZE 128
-python train.py --cfg ../configs/CamCAN/ShapleyFAKD/hgrn_hgrn.yaml  SOLVER.BATCH_SIZE 128
+#python train.py --cfg ../configs/CamCAN/ShapleyFAKD/varcnn_hgrn.yaml  SOLVER.BATCH_SIZE 128
+#python train.py --cfg ../configs/CamCAN/ShapleyFAKD/hgrn_hgrn.yaml  SOLVER.BATCH_SIZE 128
