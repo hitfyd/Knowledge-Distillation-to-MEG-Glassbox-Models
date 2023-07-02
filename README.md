@@ -2,8 +2,6 @@
 
 ## Experimental Preparation
 
-### Dataset
-
 ### Experimental Environment
 
 In the conde environment, do the following:
@@ -27,7 +25,14 @@ yacs==0.1.8
 wandb==0.15.2
 ```
 
+### Dataset Preprocessing
+
+
 ### Benchmark Models Evaluation
 
 ## Experimental Process
 
+## Acknowledgement
+
+1. https://github.com/megvii-research/mdistiller
+2. https://github.com/xuyxu/Soft-Decision-Tree
