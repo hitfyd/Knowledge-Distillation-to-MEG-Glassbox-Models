@@ -83,10 +83,8 @@ def shapley_fakd_parallel(data, model_list, M=1):
                 assert index != reference_index  # 参考样本不能是样本本身
                 reference_input = data_r[reference_index]
                 S1_r[index, m] = S2_r[index, m] = feature_mark * data_r[index] + ~feature_mark * reference_input
-                S2_r[index, m][channel_list[feature],
-                point_start_list[feature]:point_start_list[feature] + window_length] = \
-                    data_r[index][channel_list[feature],
-                    point_start_list[feature]:point_start_list[feature] + window_length]
+                S1_r[index, m][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length] = \
+                    data_r[index][channel_list[feature], point_start_list[feature]:point_start_list[feature] + window_length]
         return feature, S1_r, S2_r
 
     data_ = ray.put(data)

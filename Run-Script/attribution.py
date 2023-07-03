@@ -1,7 +1,9 @@
 import os
 import shelve
 
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics import mutual_info_score
 
 from attributionlib import class_mean_plot, AttributionResult, save_figure, shapley_fakd_parallel
 from distilllib.engine.utils import setup_seed, load_checkpoint, predict, get_data_labels_from_dataset
@@ -101,4 +103,5 @@ for mean_class in [0]:
         for i in heatmap_channel_list:
             cos_sim = cosine_similarity(i.reshape(1, -1), heatmap_channel.reshape(1, -1))
             print(cos_sim)
+            print(mutual_info_score(i, heatmap_channel))
         heatmap_channel_list.append(heatmap_channel)
