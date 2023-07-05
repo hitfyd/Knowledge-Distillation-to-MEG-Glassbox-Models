@@ -72,23 +72,23 @@ model_name_list = ["LFCNN", "VARCNN", "HGRN", "SDT_Vanilla",
 
 db_path = '../{}_benchmark'.format(dataset)
 db = shelve.open(db_path)
-batch_size = 256
+batch_size = 64
 M = 16
-for sample_id in range(0, sample_num, batch_size):
-    origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
-    features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
-    for model_id in range(len(model_list)):
-        model = model_list[model_id]
-        origin_pred = predict(model, origin_input)
-        origin_pred_label = origin_pred.max(1)[1]
-        origin_pred = origin_pred.detach().cpu().numpy()
-        origin_pred_label = origin_pred_label.detach().cpu().numpy()
-        for batch_id in range(0, len(origin_input)):
-            result = AttributionResult(dataset, label_names, sample_id + batch_id,
-                                       origin_input[batch_id], truth_label[batch_id],
-                                       model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
-                                       features_lists[model_id].detach().cpu().numpy()[batch_id])
-            db[result.result_id] = result
+# for sample_id in range(0, sample_num, batch_size):
+#     origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
+#     features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
+#     for model_id in range(len(model_list)):
+#         model = model_list[model_id]
+#         origin_pred = predict(model, origin_input)
+#         origin_pred_label = origin_pred.max(1)[1]
+#         origin_pred = origin_pred.detach().cpu().numpy()
+#         origin_pred_label = origin_pred_label.detach().cpu().numpy()
+#         for batch_id in range(0, len(origin_input)):
+#             result = AttributionResult(dataset, label_names, sample_id + batch_id,
+#                                        origin_input[batch_id], truth_label[batch_id],
+#                                        model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
+#                                        features_lists[model_id].detach().cpu().numpy()[batch_id])
+#             db[result.result_id] = result
 
 # 读取通道可视化信息
 channel_db = shelve.open('../dataset/grad_info')
