@@ -113,8 +113,13 @@ def class_mean_plot(attribution_results, channels_info, top_channel_num=10):
     assert isinstance(first_attribution_result, AttributionResult)
     channels = first_attribution_result.channels
     points = first_attribution_result.points
-    title = 'Dataset: {}    Model: {}'.format(
-        first_attribution_result.dataset, first_attribution_result.model_name)
+    title_list = first_attribution_result.model_name.split('_')
+    if len(title_list) == 3:
+        title = 'Teacher: {}  Method: {}'.format(title_list[1], title_list[2])
+    elif len(title_list) == 4:
+        title = 'Teacher: {}  Method: {}_{}'.format(title_list[1], title_list[2], title_list[3])
+    else:
+        title = 'Model: {}'.format(title_list[0])
 
     heatmap_list = []
     for attribution_result in attribution_results:
@@ -148,10 +153,10 @@ def class_mean_plot(attribution_results, channels_info, top_channel_num=10):
         print(index, channels_info.ch_names[index], heatmap_channel[index])
         top_channels[index] = (channels_info.ch_names[index], heatmap_channel[index])
 
-    fig = plt.figure(figsize=(6, 6))
-    gridlayout = gridspec.GridSpec(ncols=24, nrows=12, figure=fig, top=0.92, wspace=None, hspace=0.2)
-    axs1 = fig.add_subplot(gridlayout[:, :23])
-    axs1_colorbar = fig.add_subplot(gridlayout[:, 23])
+    fig = plt.figure(figsize=(5, 5))
+    gridlayout = gridspec.GridSpec(ncols=25, nrows=6, figure=fig, top=None, bottom=None, wspace=None, hspace=0)
+    axs1 = fig.add_subplot(gridlayout[:, :24])
+    axs1_colorbar = fig.add_subplot(gridlayout[1:, 24])
 
     fontsize = 10
     # 配色方案
@@ -161,14 +166,14 @@ def class_mean_plot(attribution_results, channels_info, top_channel_num=10):
     cmap = 'Oranges'
     plt.rcParams['font.size'] = fontsize
 
-    fig.suptitle(title, y=0.99, fontsize=fontsize)
+    fig.suptitle(title, y=0.9, fontsize=fontsize+8)
 
     # 绘制地形图
     # 地形图中TOP通道的显示参数
     mask_params = dict(marker='o', markerfacecolor='w', markeredgecolor='k', linewidth=0, markersize=4)
     mne.viz.plot_topomap(heatmap_channel, channels_info, ch_type='grad', cmap=cmap, axes=axs1, outlines='head',
                          show=False, names=names_list, mask=mask_list, mask_params=mask_params)
-    axs1.set_title("Channel Contribution\n(Topomap)", y=0.9, fontsize=fontsize)
+    # axs1.set_title("Channel Contribution\n(Topomap)", y=0.9, fontsize=fontsize)
     # 设置颜色条带
     norm = colors.Normalize(vmin=heatmap_channel.min(), vmax=heatmap_channel.max())
     colorbar.ColorbarBase(axs1_colorbar, cmap=cmap, norm=norm)

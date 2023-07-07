@@ -18,8 +18,8 @@ setup_seed(RAND_SEED)
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # 要解释的样本数据集
-# dataset = 'CamCAN'  # CamCAN DecMeg2014
-dataset = 'DecMeg2014'  # CamCAN DecMeg2014
+dataset = 'CamCAN'  # CamCAN DecMeg2014
+# dataset = 'DecMeg2014'  # CamCAN DecMeg2014
 
 dataset_path = '../dataset/{}_test.npz'.format(dataset)
 data, labels = get_data_labels_from_dataset(dataset_path)
