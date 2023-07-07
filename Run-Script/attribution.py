@@ -1,7 +1,10 @@
 import os
 import shelve
 
+import PIL
+import mne
 import numpy as np
+from matplotlib import pyplot as plt, gridspec
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import mutual_info_score
 
@@ -43,32 +46,32 @@ sdt_vanilla.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_V
 sdt_lfcnn_kd = sdt(channels=channels, points=points, num_classes=num_classes)       # KD
 sdt_varcnn_kd = sdt(channels=channels, points=points, num_classes=num_classes)
 sdt_hgrn_kd = sdt(channels=channels, points=points, num_classes=num_classes)
-sdt_lfcnn_fakd = sdt(channels=channels, points=points, num_classes=num_classes)     # FAKD
-sdt_varcnn_fakd = sdt(channels=channels, points=points, num_classes=num_classes)
-sdt_hgrn_fakd = sdt(channels=channels, points=points, num_classes=num_classes)
 sdt_lfcnn_fakd_ce = sdt(channels=channels, points=points, num_classes=num_classes)  # r"$\mathcal{L}_{FAKD}$"
 sdt_varcnn_fakd_ce = sdt(channels=channels, points=points, num_classes=num_classes)
 sdt_hgrn_fakd_ce = sdt(channels=channels, points=points, num_classes=num_classes)
+sdt_lfcnn_fakd = sdt(channels=channels, points=points, num_classes=num_classes)     # FAKD
+sdt_varcnn_fakd = sdt(channels=channels, points=points, num_classes=num_classes)
+sdt_hgrn_fakd = sdt(channels=channels, points=points, num_classes=num_classes)
 sdt_lfcnn_kd.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_LFCNN_KD".format(dataset)))
 sdt_varcnn_kd.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_VARCNN_KD".format(dataset)))
 sdt_hgrn_kd.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_HGRN_KD".format(dataset)))
-sdt_lfcnn_fakd.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_LFCNN_FAKD".format(dataset)))
-sdt_varcnn_fakd.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_VARCNN_FAKD".format(dataset)))
-sdt_hgrn_fakd.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_HGRN_FAKD".format(dataset)))
 sdt_lfcnn_fakd_ce.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_LFCNN_FAKD_CE".format(dataset)))
 sdt_varcnn_fakd_ce.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_VARCNN_FAKD_CE".format(dataset)))
 sdt_hgrn_fakd_ce.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_HGRN_FAKD_CE".format(dataset)))
+sdt_lfcnn_fakd.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_LFCNN_FAKD".format(dataset)))
+sdt_varcnn_fakd.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_VARCNN_FAKD".format(dataset)))
+sdt_hgrn_fakd.load_state_dict(load_checkpoint("../checkpoint/Models_Train/{}_SDT_HGRN_FAKD".format(dataset)))
 
 model_list = [lfcnn_teacher, varvnn_teacher, hgrn_teacher, sdt_vanilla,
               sdt_lfcnn_kd, sdt_varcnn_kd, sdt_hgrn_kd,
-              sdt_lfcnn_fakd, sdt_varcnn_fakd, sdt_hgrn_fakd,
-              sdt_lfcnn_fakd_ce, sdt_varcnn_fakd_ce, sdt_hgrn_fakd_ce]
+              sdt_lfcnn_fakd_ce, sdt_varcnn_fakd_ce, sdt_hgrn_fakd_ce,
+              sdt_lfcnn_fakd, sdt_varcnn_fakd, sdt_hgrn_fakd,]
 model_name_list = ["LFCNN", "VARCNN", "HGRN", "SDT_Vanilla",
                    "SDT_LFCNN_KD", "SDT_VARCNN_KD", "SDT_HGRN_KD",
-                   "SDT_LFCNN_FAKD", "SDT_VARCNN_FAKD", "SDT_HGRN_FAKD",
                    "SDT_LFCNN_"+r"$\mathcal{L}_{FAKD}$",
                    "SDT_VARCNN_"+r"$\mathcal{L}_{FAKD}$",
-                   "SDT_HGRN_"+r"$\mathcal{L}_{FAKD}$"]
+                   "SDT_HGRN_"+r"$\mathcal{L}_{FAKD}$",
+                   "SDT_LFCNN_FAKD", "SDT_VARCNN_FAKD", "SDT_HGRN_FAKD",]
 
 db_path = '../{}_benchmark'.format(dataset)
 db = shelve.open(db_path)
@@ -113,9 +116,32 @@ for mean_class in [0]:
             # result_list.append(result)  # 模型的总体特征归因（不分区标签）
 
         fig, heatmap_channel, _ = class_mean_plot(result_list, channels_info, top_channel_num=5)
-        save_figure(fig, '../plot/heatmap/', '{}_{}_{}_mean'.format(dataset, model_name_list[model_id], mean_class))
+        # save_figure(fig, '../plot/heatmap/', '{}_{}_{}_mean'.format(dataset, model_name_list[model_id], mean_class))
         for i in heatmap_channel_list:
             cos_sim = cosine_similarity(i.reshape(1, -1), heatmap_channel.reshape(1, -1))
             print(cos_sim)
-            # print(mutual_info_score(i, heatmap_channel))
         heatmap_channel_list.append(heatmap_channel)
+
+fig_all = plt.figure(figsize=(20, 20))
+cmap = 'Oranges'
+gridlayout = gridspec.GridSpec(ncols=4, nrows=4, figure=fig_all, top=None, bottom=None, wspace=None, hspace=0)
+for idx in range(len(model_name_list)):
+    title_list = model_name_list[idx].split('_')
+    if len(title_list) == 3:
+        title = 'Teacher: {}  Method: {}'.format(title_list[1], title_list[2])
+    elif len(title_list) == 4:
+        title = 'Teacher: {}  Method: {}_{}'.format(title_list[1], title_list[2], title_list[3])
+    else:
+        title = 'Model: {}'.format(title_list[0])
+
+    if idx < 4:
+        axs = fig_all.add_subplot(gridlayout[0, idx])
+    else:
+        col_idx = (idx - 4) % 3
+        row_idx = int((idx - 4) / 3) + 1
+        axs = fig_all.add_subplot(gridlayout[row_idx, col_idx])
+    axs.set_title(title)
+    mne.viz.plot_topomap(heatmap_channel_list[idx], channels_info, ch_type='grad', cmap=cmap, axes=axs, outlines='head',
+                         show=False,)
+plt.show()
+save_figure(fig_all, '../plot/heatmap/', '{}_all'.format(dataset))
