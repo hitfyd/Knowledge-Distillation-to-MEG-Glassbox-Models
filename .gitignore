@@ -263,8 +263,8 @@ cython_debug/
 # 自定义
 record/
 plot/
-checkpoint/
-dataset/
+#checkpoint/
+dataset/*.npz
 
 /Run-Script/wandb/
 /Run-Script/output/
