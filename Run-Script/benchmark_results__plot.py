@@ -4,8 +4,8 @@ from matplotlib import pyplot as plt, rcParams
 from distilllib.engine.utils import save_figure
 
 # 要解释的样本数据集
-# dataset = 'CamCAN'  # CamCAN DecMeg2014
-dataset = 'DecMeg2014'  # CamCAN DecMeg2014
+dataset = 'CamCAN'  # CamCAN DecMeg2014
+# dataset = 'DecMeg2014'  # CamCAN DecMeg2014
 
 species = ("Vanilla", "KD", "GDK", "MSEKD", "DKD", r"$\mathcal{L}_{FAKD}$", "FAKD")
 penguin_means = {
@@ -27,6 +27,8 @@ width = 0.25  # the width of the bars
 multiplier = 0
 
 fig, ax = plt.subplots(layout='constrained', figsize=(7.5, 5))
+fontsize = 10
+plt.rcParams['font.size'] = fontsize
 
 for attribute, (mean, std) in penguin_means.items():
     offset = width * multiplier
@@ -34,11 +36,11 @@ for attribute, (mean, std) in penguin_means.items():
     # 一个一个添加误差棒
     if attribute == "Vanilla":
         rects = ax.bar(x + offset + width, mean, width, label=attribute)
-        ax.errorbar(x[0] + offset + width, mean, yerr=std, ecolor='black', elinewidth=1, capsize=5, capthick=1)
+        ax.errorbar(x[0] + offset + width, mean, yerr=std, ecolor='black', elinewidth=1.5, capsize=5, capthick=1.5)
     else:
         rects = ax.bar(x[1:] + offset, mean, width, label=attribute)
         for i in range(len(species)-1):
-            ax.errorbar(x[i+1] + offset, mean[i], yerr=std[i], ecolor='black', elinewidth=1, capsize=5, capthick=1)
+            ax.errorbar(x[i+1] + offset, mean[i], yerr=std[i], ecolor='black', elinewidth=1.5, capsize=5, capthick=1.5)
         multiplier += 1
 
 # Add some text for labels, title and custom x-axis tick labels, etc.
