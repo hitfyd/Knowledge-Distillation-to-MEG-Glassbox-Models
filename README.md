@@ -96,7 +96,6 @@ python train.py --cfg ../configs/DecMeg2014/ShapleyFAKD/hgrn_sdt.yaml  SOLVER.BA
 ```angular2html
 cd ./Run-Script
 python attribution.py
-python attribution_results_plot.py
 ```
 
 ## Acknowledgement

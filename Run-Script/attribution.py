@@ -77,21 +77,21 @@ db_path = '../{}_benchmark'.format(dataset)
 db = shelve.open(db_path)
 batch_size = 64
 M = 16
-# for sample_id in range(0, sample_num, batch_size):
-#     origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
-#     features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
-#     for model_id in range(len(model_list)):
-#         model = model_list[model_id]
-#         origin_pred = predict(model, origin_input)
-#         origin_pred_label = origin_pred.max(1)[1]
-#         origin_pred = origin_pred.detach().cpu().numpy()
-#         origin_pred_label = origin_pred_label.detach().cpu().numpy()
-#         for batch_id in range(0, len(origin_input)):
-#             result = AttributionResult(dataset, label_names, sample_id + batch_id,
-#                                        origin_input[batch_id], truth_label[batch_id],
-#                                        model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
-#                                        features_lists[model_id].detach().cpu().numpy()[batch_id])
-#             db[result.result_id] = result
+for sample_id in range(0, sample_num, batch_size):
+    origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
+    features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
+    for model_id in range(len(model_list)):
+        model = model_list[model_id]
+        origin_pred = predict(model, origin_input)
+        origin_pred_label = origin_pred.max(1)[1]
+        origin_pred = origin_pred.detach().cpu().numpy()
+        origin_pred_label = origin_pred_label.detach().cpu().numpy()
+        for batch_id in range(0, len(origin_input)):
+            result = AttributionResult(dataset, label_names, sample_id + batch_id,
+                                       origin_input[batch_id], truth_label[batch_id],
+                                       model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
+                                       features_lists[model_id].detach().cpu().numpy()[batch_id])
+            db[result.result_id] = result
 
 # 读取通道可视化信息
 channel_db = shelve.open('../dataset/grad_info')
@@ -121,27 +121,3 @@ for mean_class in [0]:
             cos_sim = cosine_similarity(i.reshape(1, -1), heatmap_channel.reshape(1, -1))
             print(cos_sim)
         heatmap_channel_list.append(heatmap_channel)
-
-fig_all = plt.figure(figsize=(20, 20))
-cmap = 'Oranges'
-gridlayout = gridspec.GridSpec(ncols=4, nrows=4, figure=fig_all, top=None, bottom=None, wspace=None, hspace=0)
-for idx in range(len(model_name_list)):
-    title_list = model_name_list[idx].split('_')
-    if len(title_list) == 3:
-        title = 'Teacher: {}  Method: {}'.format(title_list[1], title_list[2])
-    elif len(title_list) == 4:
-        title = 'Teacher: {}  Method: {}_{}'.format(title_list[1], title_list[2], title_list[3])
-    else:
-        title = 'Model: {}'.format(title_list[0])
-
-    if idx < 4:
-        axs = fig_all.add_subplot(gridlayout[0, idx])
-    else:
-        col_idx = (idx - 4) % 3
-        row_idx = int((idx - 4) / 3) + 1
-        axs = fig_all.add_subplot(gridlayout[row_idx, col_idx])
-    axs.set_title(title)
-    mne.viz.plot_topomap(heatmap_channel_list[idx], channels_info, ch_type='grad', cmap=cmap, axes=axs, outlines='head',
-                         show=False,)
-plt.show()
-save_figure(fig_all, '../plot/heatmap/', '{}_all'.format(dataset))
