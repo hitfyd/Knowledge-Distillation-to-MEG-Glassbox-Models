@@ -6,7 +6,7 @@ import mne
 import numpy as np
 from matplotlib import pyplot as plt, gridspec
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.metrics import mutual_info_score
+from sklearn.metrics import r2_score
 
 from attributionlib import class_mean_plot, AttributionResult, shapley_fakd_parallel
 from distilllib.engine.utils import setup_seed, load_checkpoint, predict, get_data_labels_from_dataset, save_figure
@@ -21,8 +21,8 @@ setup_seed(RAND_SEED)
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # 要解释的样本数据集
-dataset = 'CamCAN'  # CamCAN DecMeg2014
-# dataset = 'DecMeg2014'  # CamCAN DecMeg2014
+# dataset = 'CamCAN'  # CamCAN DecMeg2014
+dataset = 'DecMeg2014'  # CamCAN DecMeg2014
 
 dataset_path = '../dataset/{}_test.npz'.format(dataset)
 data, labels = get_data_labels_from_dataset(dataset_path)
@@ -77,30 +77,35 @@ db_path = '../{}_benchmark'.format(dataset)
 db = shelve.open(db_path)
 batch_size = 64
 M = 16
-for sample_id in range(0, sample_num, batch_size):
-    origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
-    features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
-    for model_id in range(len(model_list)):
-        model = model_list[model_id]
-        origin_pred = predict(model, origin_input)
-        origin_pred_label = origin_pred.max(1)[1]
-        origin_pred = origin_pred.detach().cpu().numpy()
-        origin_pred_label = origin_pred_label.detach().cpu().numpy()
-        for batch_id in range(0, len(origin_input)):
-            result = AttributionResult(dataset, label_names, sample_id + batch_id,
-                                       origin_input[batch_id], truth_label[batch_id],
-                                       model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
-                                       features_lists[model_id].detach().cpu().numpy()[batch_id])
-            db[result.result_id] = result
+# for sample_id in range(0, sample_num, batch_size):
+#     origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
+#     features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
+#     for model_id in range(len(model_list)):
+#         model = model_list[model_id]
+#         origin_pred = predict(model, origin_input)
+#         origin_pred_label = origin_pred.max(1)[1]
+#         origin_pred = origin_pred.detach().cpu().numpy()
+#         origin_pred_label = origin_pred_label.detach().cpu().numpy()
+#         for batch_id in range(0, len(origin_input)):
+#             result = AttributionResult(dataset, label_names, sample_id + batch_id,
+#                                        origin_input[batch_id], truth_label[batch_id],
+#                                        model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
+#                                        features_lists[model_id].detach().cpu().numpy()[batch_id])
+#             db[result.result_id] = result
 
 # 读取通道可视化信息
 channel_db = shelve.open('../dataset/grad_info')
 channels_info = channel_db['info']
 channel_db.close()
 
+pred_list = []
 heatmap_channel_list = []
 for mean_class in [0]:
     for model_id in range(len(model_list)):
+        model = model_list[model_id]
+        pred = predict(model, data).detach().cpu().numpy()
+        pred_list.append(pred)
+
         result_list = []
         for sample_id in range(sample_num):
             result_id = "{}_{}_{}".format(dataset, sample_id, model_name_list[model_id])
@@ -117,7 +122,8 @@ for mean_class in [0]:
 
         fig, heatmap_channel, _ = class_mean_plot(result_list, channels_info, top_channel_num=5)
         # save_figure(fig, '../plot/heatmap/', '{}_{}_{}_mean'.format(dataset, model_name_list[model_id], mean_class))
-        for i in heatmap_channel_list:
-            cos_sim = cosine_similarity(i.reshape(1, -1), heatmap_channel.reshape(1, -1))
-            print(cos_sim)
+        for i in range(len(heatmap_channel_list)):
+            cos_sim = cosine_similarity(heatmap_channel_list[i].reshape(1, -1), heatmap_channel.reshape(1, -1))
+            r2 = r2_score(pred_list[i], pred)
+            print(cos_sim, r2)
         heatmap_channel_list.append(heatmap_channel)
