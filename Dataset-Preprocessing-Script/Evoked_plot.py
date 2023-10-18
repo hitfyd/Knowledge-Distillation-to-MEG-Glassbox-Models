@@ -101,20 +101,25 @@ if __name__ == '__main__':
     times = 0.15
     cmap = 'Oranges'
 
-    aud_evoked_average = aud_evoked_list[0]
-    vis_evoked_average = vis_evoked_list[0]
-    aud_evoked_average.data = aud_evoked_list[0].data / 5
-    vis_evoked_average.data = vis_evoked_list[0].data / 5
+    aud_evoked_average = aud_evoked_list[0].copy()
+    vis_evoked_average = vis_evoked_list[0].copy()
+    aud_evoked_average.data = aud_evoked_list[0].data / num_ids
+    vis_evoked_average.data = vis_evoked_list[0].data / num_ids
     for sub_id in range(1, num_ids):
-        aud_evoked_average.data += aud_evoked_list[sub_id].data/5
-        vis_evoked_average.data += vis_evoked_list[sub_id].data/5
+        aud_evoked_average.data += aud_evoked_list[sub_id].data/num_ids
+        vis_evoked_average.data += vis_evoked_list[sub_id].data/num_ids
+
+    evoked_average = aud_evoked_average.copy()
+    evoked_average.data = aud_evoked_average.data/2 + vis_evoked_average.data/2
     # fig_aud_evoked_average = aud_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.02, cmap=cmap, sensors=False, ncols=4, nrows="auto")
     # fig_vis_evoked_average = vis_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.02, cmap=cmap, sensors=False, ncols=4, nrows="auto")
     # fig_aud_evoked_average = aud_evoked_average.plot_topomap(times, ch_type=ch_type, cmap=cmap, sensors=False, ncols=4, nrows="auto")
     # fig_vis_evoked_average = vis_evoked_average.plot_topomap(times, ch_type=ch_type, cmap=cmap, sensors=False, ncols=4, nrows="auto")
     fig_aud_evoked_average = aud_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.1, cmap=cmap, sensors=False, ncols=4, nrows="auto")
     fig_vis_evoked_average = vis_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.1, cmap=cmap, sensors=False, ncols=4, nrows="auto")
+    fig_evoked_average = evoked_average.plot_topomap(times, ch_type=ch_type, average=0.1, cmap=cmap, sensors=False, ncols=4, nrows="auto")
     save_figure(fig_aud_evoked_average, '../plot/evoked/', 'fig_aud_evoked_average')
     save_figure(fig_aud_evoked_average, '../plot/evoked/', 'fig_vis_evoked_average')
+    save_figure(fig_evoked_average, '../plot/evoked/', 'fig_evoked_average')
 
 
