@@ -4,13 +4,17 @@
 # [1] J. R. Taylor et al., “The Cambridge Centre for Ageing and Neuroscience (Cam-CAN) data repository: Structural and functional MRI, MEG, and cognitive data from a cross-sectional adult lifespan sample,” NeuroImage, vol. 144, pp. 262–269, Jan. 2017, doi: 10.1016/j.neuroimage.2015.09.018.
 # [2] I. Zubarev, R. Zetter, H.-L. Halme, and L. Parkkonen, “Adaptive neural network classifier for decoding MEG signals,” Neuroimage, vol. 197, pp. 425–434, Aug. 2019, doi: 10.1016/j.neuroimage.2019.04.068.
 # [3] https://www.cam-can.com/
-
+import joblib
 import mne
 import os
 from glob import glob
 from multiprocessing import Pool
 import numpy as np
 import traceback
+
+from distilllib.engine.utils import save_figure
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 # MEG RAW 预处理参数
 freq_min = 1.
@@ -57,14 +61,10 @@ def raw2epochs(subject, cover=False):
         epochs.equalize_event_counts(['6', '7', '8'])
         epochs.equalize_event_counts([['6', '7', '8'], '9'])
 
-        times = np.arange(0.05, 0.25, 0.01)
-        cmap = 'Oranges'
         aud_evoked = epochs['6', '7', '8'].average()
         vis_evoked = epochs['9'].average()
-        aud_evoked.plot_topomap(times, ch_type=ch_type, average=0.02, cmap=cmap, sensors=False, ncols=4, nrows="auto")
-        vis_evoked.plot_topomap(times, ch_type=ch_type, average=0.02, cmap=cmap, sensors=False, ncols=4, nrows="auto")
-        # aud_evoked.plot_topomap(times, ch_type=ch_type, cmap=cmap, sensors=False, ncols=4, nrows="auto")
-        # vis_evoked.plot_topomap(times, ch_type=ch_type, cmap=cmap, sensors=False, ncols=4, nrows="auto")
+
+        return aud_evoked, vis_evoked
 
     except IOError:
         print(subject, IOError)
@@ -81,5 +81,40 @@ if __name__ == '__main__':
     sub_dirs = glob(data_path + 'sub-CC*')
     # 按照受试者编号从小到大排序
     sub_dirs.sort()
-    raw2epochs(sub_dirs[204], True)
+    num_id_start = 200
+    num_ids = 50
+    joblib_file = '../dataset/CamCAN_{}-{}_evoked_list'.format(num_id_start, num_id_start+num_ids)
+
+    if os.path.exists(joblib_file):
+        aud_evoked_list, vis_evoked_list = joblib.load(joblib_file)
+    else:
+        aud_evoked_list, vis_evoked_list = [], []
+        for sub_id in range(num_id_start, num_id_start+num_ids):
+            aud_evoked, vis_evoked = raw2epochs(sub_dirs[sub_id], True)
+            aud_evoked_list.append(aud_evoked)
+            vis_evoked_list.append(vis_evoked)
+
+        joblib.dump([aud_evoked_list, vis_evoked_list], joblib_file)
+
+    # times = np.arange(0.05, 0.25, 0.01)
+    times = np.arange(0.1, 0.2, 0.01)
+    times = 0.15
+    cmap = 'Oranges'
+
+    aud_evoked_average = aud_evoked_list[0]
+    vis_evoked_average = vis_evoked_list[0]
+    aud_evoked_average.data = aud_evoked_list[0].data / 5
+    vis_evoked_average.data = vis_evoked_list[0].data / 5
+    for sub_id in range(1, num_ids):
+        aud_evoked_average.data += aud_evoked_list[sub_id].data/5
+        vis_evoked_average.data += vis_evoked_list[sub_id].data/5
+    # fig_aud_evoked_average = aud_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.02, cmap=cmap, sensors=False, ncols=4, nrows="auto")
+    # fig_vis_evoked_average = vis_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.02, cmap=cmap, sensors=False, ncols=4, nrows="auto")
+    # fig_aud_evoked_average = aud_evoked_average.plot_topomap(times, ch_type=ch_type, cmap=cmap, sensors=False, ncols=4, nrows="auto")
+    # fig_vis_evoked_average = vis_evoked_average.plot_topomap(times, ch_type=ch_type, cmap=cmap, sensors=False, ncols=4, nrows="auto")
+    fig_aud_evoked_average = aud_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.1, cmap=cmap, sensors=False, ncols=4, nrows="auto")
+    fig_vis_evoked_average = vis_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.1, cmap=cmap, sensors=False, ncols=4, nrows="auto")
+    save_figure(fig_aud_evoked_average, '../plot/evoked/', 'fig_aud_evoked_average')
+    save_figure(fig_aud_evoked_average, '../plot/evoked/', 'fig_vis_evoked_average')
+
 
