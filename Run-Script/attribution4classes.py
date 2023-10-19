@@ -25,9 +25,9 @@ dataset = 'CamCAN'  # CamCAN DecMeg2014
 # dataset = 'DecMeg2014'  # CamCAN DecMeg2014
 
 dataset_path = '../dataset/{}_test.npz'.format(dataset)
-data, labels = get_data_labels_from_dataset(dataset_path)
-sample_num, channels, points = data.shape
-num_classes = len(set(labels))
+origin_data, origin_labels = get_data_labels_from_dataset(dataset_path)
+_, channels, points = origin_data.shape
+num_classes = len(set(origin_labels))
 label_names = ['audio', 'visual']
 if dataset == 'DecMeg2014':
     label_names = ['Scramble', 'Face']
@@ -73,32 +73,37 @@ model_name_list = ["LFCNN", "VARCNN", "HGRN", "SDT_Vanilla",
                    "SDT_HGRN_"+r"$\mathcal{L}_{FAKD}$",
                    "SDT_LFCNN_FAKD", "SDT_VARCNN_FAKD", "SDT_HGRN_FAKD",]
 
-db_path = '../{}_benchmark4classes'.format(dataset)
-db = shelve.open(db_path)
-batch_size = 128
-M = 32
-for sample_id in range(0, sample_num, batch_size):
-    origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
-    features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
-    for model_id in range(len(model_list)):
-        model = model_list[model_id]
-        origin_pred = predict(model, origin_input)
-        origin_pred_label = origin_pred.max(1)[1]
-        origin_pred = origin_pred.detach().cpu().numpy()
-        origin_pred_label = origin_pred_label.detach().cpu().numpy()
-        for batch_id in range(0, len(origin_input)):
-            result = AttributionResult(dataset, label_names, sample_id + batch_id,
-                                       origin_input[batch_id], truth_label[batch_id],
-                                       model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
-                                       features_lists[model_id].detach().cpu().numpy()[batch_id])
-            db[result.result_id] = result
-
 # 读取通道可视化信息
 channel_db = shelve.open('../dataset/grad_info')
 channels_info = channel_db['info']
 channel_db.close()
 
+batch_size = 64
+M = 32
 for mean_class in [0, 1]:
+    class_index = origin_labels == mean_class
+    data = origin_data[class_index]
+    labels = origin_labels[class_index]
+    sample_num = len(labels)
+    db_path = '../{}_benchmark4class_{}'.format(dataset, mean_class)
+    db = shelve.open(db_path)
+    for sample_id in range(0, sample_num, batch_size):
+        print("Computing Shapley Values:", sample_id, sample_id + batch_size)
+        origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
+        features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
+        for model_id in range(len(model_list)):
+            model = model_list[model_id]
+            origin_pred = predict(model, origin_input)
+            origin_pred_label = origin_pred.max(1)[1]
+            origin_pred = origin_pred.detach().cpu().numpy()
+            origin_pred_label = origin_pred_label.detach().cpu().numpy()
+            for batch_id in range(0, len(origin_input)):
+                result = AttributionResult(dataset, label_names, sample_id + batch_id,
+                                           origin_input[batch_id], truth_label[batch_id],
+                                           model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
+                                           features_lists[model_id].detach().cpu().numpy()[batch_id])
+                db[result.result_id] = result
+
     pred_list = []
     heatmap_channel_list = []
     for model_id in range(len(model_list)):
