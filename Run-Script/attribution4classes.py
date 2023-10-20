@@ -21,8 +21,8 @@ setup_seed(RAND_SEED)
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # 要解释的样本数据集
-dataset = 'CamCAN'  # CamCAN DecMeg2014
-# dataset = 'DecMeg2014'  # CamCAN DecMeg2014
+# dataset = 'CamCAN'  # CamCAN DecMeg2014
+dataset = 'DecMeg2014'  # CamCAN DecMeg2014
 
 dataset_path = '../dataset/{}_test.npz'.format(dataset)
 origin_data, origin_labels = get_data_labels_from_dataset(dataset_path)
@@ -80,6 +80,8 @@ channel_db.close()
 
 batch_size = 64
 M = 32
+if dataset == 'DecMeg2014':
+    M = 16
 for mean_class in [0, 1]:
     class_index = origin_labels == mean_class
     data = origin_data[class_index]
