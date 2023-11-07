@@ -25,7 +25,7 @@ def feature_segment(channels, points, window_length):
     return features_num, channel_list, point_start_list
 
 
-def shapley_fakd_loss(data, student, teacher, M, **kwargs):
+def shapley_fakd_loss(data, student, teacher, M, NUM_CLASSES, **kwargs):
     batch_size, channels, points = data.size()
     window_length = points
     features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
@@ -54,19 +54,19 @@ def shapley_fakd_loss(data, student, teacher, M, **kwargs):
     # 计算S1和S2的预测差值
     S1 = S1.reshape(-1, channels, points)
     S2 = S2.reshape(-1, channels, points)
-    S1_student_preds = predict(student, S1)
-    S2_student_preds = predict(student, S2)
+    S1_student_preds = predict(student, S1, NUM_CLASSES)
+    S2_student_preds = predict(student, S2, NUM_CLASSES)
     features_student = (S1_student_preds.view(batch_size, features_num, M, -1) -
                         S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
-    S1_preds = predict(teacher, S1, eval=True)
-    S2_preds = predict(teacher, S2, eval=True)
+    S1_preds = predict(teacher, S1, NUM_CLASSES, eval=True)
+    S2_preds = predict(teacher, S2, NUM_CLASSES, eval=True)
     features_teacher = (S1_preds.view(batch_size, features_num, M, -1) -
                         S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
     loss_fakd = nmse_loss(features_student, features_teacher)
     return loss_fakd
 
 
-def shapley_fakd_loss_parallel(data, student, teacher, M, **kwargs):
+def shapley_fakd_loss_parallel(data, student, teacher, M, NUM_CLASSES, **kwargs):
     batch_size, channels, points = data.size()
     window_length = points
     features_num, channel_list, point_start_list = feature_segment(channels, points, window_length)
@@ -105,12 +105,12 @@ def shapley_fakd_loss_parallel(data, student, teacher, M, **kwargs):
     # 计算S1和S2的预测差值
     S1 = S1.reshape(-1, channels, points)
     S2 = S2.reshape(-1, channels, points)
-    S1_student_preds = predict(student, S1)
-    S2_student_preds = predict(student, S2)
+    S1_student_preds = predict(student, S1, NUM_CLASSES)
+    S2_student_preds = predict(student, S2, NUM_CLASSES)
     features_student = (S1_student_preds.view(batch_size, features_num, M, -1) -
                         S2_student_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
-    S1_preds = predict(teacher, S1, eval=True)
-    S2_preds = predict(teacher, S2, eval=True)
+    S1_preds = predict(teacher, S1, NUM_CLASSES, eval=True)
+    S2_preds = predict(teacher, S2, NUM_CLASSES, eval=True)
     features_teacher = (S1_preds.view(batch_size, features_num, M, -1) -
                         S2_preds.view(batch_size, features_num, M, -1)).sum(axis=(2)) / M
     loss_fakd = nmse_loss(features_student, features_teacher)
@@ -122,6 +122,7 @@ class ShapleyFAKD(Distiller):
 
     def __init__(self, student, teacher, cfg):
         super(ShapleyFAKD, self).__init__(student, teacher)
+        self.NUM_CLASSES = cfg.DATASET.NUM_CLASSES
         self.with_kd = cfg.ShapleyFAKD.WITH_KD
         self.M = cfg.ShapleyFAKD.M
         self.temperature = cfg.ShapleyFAKD.TEMPERATURE
@@ -148,9 +149,9 @@ class ShapleyFAKD(Distiller):
         # losses
         loss_ce = self.ce_loss_weight * (F.cross_entropy(logits_student, target) + penalty)
         if self.parallel:
-            loss_fa = self.fa_loss_weight * shapley_fakd_loss_parallel(data, self.student, self.teacher, self.M, **kwargs)
+            loss_fa = self.fa_loss_weight * shapley_fakd_loss_parallel(data, self.student, self.teacher, self.M, self.NUM_CLASSES, **kwargs)
         else:
-            loss_fa = self.fa_loss_weight * shapley_fakd_loss(data, self.student, self.teacher, self.M, **kwargs)
+            loss_fa = self.fa_loss_weight * shapley_fakd_loss(data, self.student, self.teacher, self.M, self.NUM_CLASSES, **kwargs)
 
         if self.with_kd:
             loss_kd = self.kd_loss_weight * kd_loss(logits_student, logits_teacher, self.temperature)

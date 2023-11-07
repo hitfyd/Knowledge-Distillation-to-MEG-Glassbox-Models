@@ -1,0 +1,17 @@
+EXPERIMENT:
+  NAME: ""
+  TAG: "shapleyfakd,lfcnn,sdt"
+  PROJECT: "BCIIV2a_baselines"
+DATASET:
+  TYPE: "BCIIV2a"
+  CHANNELS: 22
+  POINTS: 1125
+  NUM_CLASSES: 4
+DISTILLER:
+  TYPE: "ShapleyFAKD"
+  TEACHER: "BCIIV2a_lfcnn"
+  STUDENT: "sdt"
+SOLVER:
+  BATCH_SIZE: 64
+  EPOCHS: 20
+  LR: 0.0003
