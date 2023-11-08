@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "shapleyfakd,hgrn,sdt"
+  TAG: "shapleyfakd,eegnetv4,sdt"
   PROJECT: "BCIIV2a_baselines"
 DATASET:
   TYPE: "BCIIV2a"
@@ -9,9 +9,9 @@ DATASET:
   NUM_CLASSES: 4
 DISTILLER:
   TYPE: "ShapleyFAKD"
-  TEACHER: "BCIIV2a_hgrn"
+  TEACHER: "BCIIV2a_eegnetv4"
   STUDENT: "sdt"
 SOLVER:
-  BATCH_SIZE: 512
+  BATCH_SIZE: 64
   EPOCHS: 20
-  LR: 0.003
+  LR: 0.001

@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn as nn
+from braindecode.models import EEGNetv4
 
 # global network parameters
 # CamCAN data parameters
@@ -63,6 +64,10 @@ def varcnn(channels=204, points=100, num_classes=2, **kwargs):
 def hgrn(channels=204, points=100, num_classes=2, **kwargs):
     init_global_network_parameters(channels=channels, points=points, num_classes=num_classes)
     return HGRN()
+
+
+def eegnetv4(channels=204, points=100, num_classes=2, **kwargs):
+    return EEGNetv4(channels, num_classes, points)
 
 
 # 转换非torch.nn类型操作，以适应Sequential

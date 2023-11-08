@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "vanilla,lfcnn"
+  TAG: "vanilla,eegnetv4"
   PROJECT: "BCIIV2a_baselines"
 DATASET:
   TYPE: "BCIIV2a"
@@ -10,8 +10,8 @@ DATASET:
 DISTILLER:
   TYPE: "NONE"
   TEACHER: ""
-  STUDENT: "BCIIV2a_lfcnn"
+  STUDENT: "BCIIV2a_eegnetv4"
 SOLVER:
   BATCH_SIZE: 64
-  EPOCHS: 100
-  LR: 0.0003
+  EPOCHS: 200
+  LR: 0.003
