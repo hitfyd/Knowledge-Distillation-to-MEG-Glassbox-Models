@@ -5,14 +5,12 @@ python train.py --cfg ../configs/BCIIV2a/Vanilla/EEGNetv4.yaml SOLVER.LR 0.003
 python train.py --cfg ../configs/BCIIV2a/Vanilla/EEGNetv4.yaml SOLVER.LR 0.001
 python train.py --cfg ../configs/BCIIV2a/Vanilla/EEGNetv4.yaml SOLVER.LR 0.0003
 python train.py --cfg ../configs/BCIIV2a/Vanilla/EEGNetv4.yaml SOLVER.BATCH_SIZE 32
-python train.py --cfg ../configs/BCIIV2a/Vanilla/EEGNetv4.yaml SOLVER.BATCH_SIZE 64
 python train.py --cfg ../configs/BCIIV2a/Vanilla/EEGNetv4.yaml SOLVER.BATCH_SIZE 128
 
 python train.py --cfg ../configs/BCIIV2a/Vanilla/SDT.yaml SOLVER.LR 0.003
 python train.py --cfg ../configs/BCIIV2a/Vanilla/SDT.yaml SOLVER.LR 0.001
 python train.py --cfg ../configs/BCIIV2a/Vanilla/SDT.yaml SOLVER.LR 0.0003
 python train.py --cfg ../configs/BCIIV2a/Vanilla/SDT.yaml SOLVER.BATCH_SIZE 32
-python train.py --cfg ../configs/BCIIV2a/Vanilla/SDT.yaml SOLVER.BATCH_SIZE 64
 python train.py --cfg ../configs/BCIIV2a/Vanilla/SDT.yaml SOLVER.BATCH_SIZE 128
 
 # Dataset: CamCAN; Teacher: EEGNetv4; Student: soft decision tree
