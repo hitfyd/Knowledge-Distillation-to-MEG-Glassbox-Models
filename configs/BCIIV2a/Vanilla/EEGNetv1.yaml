@@ -1,6 +1,6 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "kd,eegnetv4,sdt"
+  TAG: "vanilla,eegnetv1"
   PROJECT: "BCIIV2a_baselines"
 DATASET:
   TYPE: "BCIIV2a"
@@ -8,10 +8,10 @@ DATASET:
   POINTS: 1125
   NUM_CLASSES: 4
 DISTILLER:
-  TYPE: "KD"
-  TEACHER: "BCIIV2a_eegnetv4"
-  STUDENT: "sdt"
+  TYPE: "NONE"
+  TEACHER: ""
+  STUDENT: "BCIIV2a_eegnetv1"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 200
-  LR: 0.001
+  LR: 0.003

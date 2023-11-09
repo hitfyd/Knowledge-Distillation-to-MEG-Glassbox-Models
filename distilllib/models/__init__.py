@@ -1,6 +1,6 @@
 import os
 
-from .DNNClassifier import lfcnn, varcnn, hgrn, eegnetv4
+from .DNNClassifier import lfcnn, varcnn, hgrn, eegnetv4, eegnetv1
 from .SoftDecisionTree import sdt
 
 
@@ -20,6 +20,7 @@ model_dict = {
     "DecMeg2014_hgrn": (hgrn, model_checkpoint_prefix + "DecMeg2014_HGRN_20220616192753_checkpoint.pt"),
 
     "BCIIV2a_eegnetv4": (eegnetv4, model_checkpoint_prefix + "BCIIV2a_eegnetv4"),
+    "BCIIV2a_eegnetv1": (eegnetv1, None),
 
 
     # students
