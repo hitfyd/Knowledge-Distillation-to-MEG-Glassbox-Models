@@ -4,6 +4,8 @@
 # [1] J. R. Taylor et al., “The Cambridge Centre for Ageing and Neuroscience (Cam-CAN) data repository: Structural and functional MRI, MEG, and cognitive data from a cross-sectional adult lifespan sample,” NeuroImage, vol. 144, pp. 262–269, Jan. 2017, doi: 10.1016/j.neuroimage.2015.09.018.
 # [2] I. Zubarev, R. Zetter, H.-L. Halme, and L. Parkkonen, “Adaptive neural network classifier for decoding MEG signals,” Neuroimage, vol. 197, pp. 425–434, Aug. 2019, doi: 10.1016/j.neuroimage.2019.04.068.
 # [3] https://www.cam-can.com/
+import shelve
+
 import joblib
 import mne
 import os
@@ -137,9 +139,18 @@ if __name__ == '__main__':
     face_times = 0.224
     cmap = 'Oranges'
 
-    mne.viz.plot_evoked_topomap
+    scramble_evoked_peak_feature = scramble_evoked.data[:, 185]
+    face_evoked_peak_feature = face_evoked.data[:, 181]
+    evoked_feature_db = shelve.open('../dataset/DecMeg2014_evoked_feature')
+    evoked_feature_db["scramble"] = scramble_evoked_peak_feature
+    evoked_feature_db["face"] = face_evoked_peak_feature
+    evoked_feature_db.close()
+
+    # mne.viz.plot_topomap(scramble_evoked_peak_feature, scramble_evoked.info, ch_type='grad', cmap=cmap, outlines='head')
+    # fig_scramble_evoked_average = mne.viz.plot_evoked_topomap(scramble_evoked, times='peaks', ch_type=ch_type, average=None, cmap=cmap, outlines='head')
     fig_scramble_evoked_average = scramble_evoked.plot_topomap(scramble_times, ch_type=ch_type, average=None, cmap=cmap,
                                                                sensors=False, outlines='head', ncols=4, nrows="auto")
+    # fig_face_evoked_average = mne.viz.plot_evoked_topomap(face_evoked, times='peaks', ch_type=ch_type, average=None, cmap=cmap, outlines='head')
     fig_face_evoked_average = face_evoked.plot_topomap(face_times, ch_type=ch_type, average=None, cmap=cmap,
                                                        sensors=False, outlines='head', ncols=4, nrows="auto")
     save_figure(fig_scramble_evoked_average, '../plot/evoked/', 'DecMeg2014_fig_scramble_evoked_average')

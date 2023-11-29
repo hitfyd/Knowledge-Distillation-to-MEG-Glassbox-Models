@@ -89,25 +89,39 @@ for mean_class in [0, 1]:
     sample_num = len(labels)
     db_path = '../{}_benchmark4class_{}'.format(dataset, mean_class)
     db = shelve.open(db_path)
-    for sample_id in range(0, sample_num, batch_size):
-        print("Computing Shapley Values:", sample_id, sample_id + batch_size)
-        origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
-        features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
-        for model_id in range(len(model_list)):
-            model = model_list[model_id]
-            origin_pred = predict(model, origin_input)
-            origin_pred_label = origin_pred.max(1)[1]
-            origin_pred = origin_pred.detach().cpu().numpy()
-            origin_pred_label = origin_pred_label.detach().cpu().numpy()
-            for batch_id in range(0, len(origin_input)):
-                result = AttributionResult(dataset, label_names, sample_id + batch_id,
-                                           origin_input[batch_id], truth_label[batch_id],
-                                           model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
-                                           features_lists[model_id].detach().cpu().numpy()[batch_id])
-                db[result.result_id] = result
+    # for sample_id in range(0, sample_num, batch_size):
+    #     print("Computing Shapley Values:", sample_id, sample_id + batch_size)
+    #     origin_input, truth_label = data[sample_id:sample_id + batch_size], labels[sample_id:sample_id + batch_size]
+    #     features_lists = shapley_fakd_parallel(origin_input, model_list, M=M)
+    #     for model_id in range(len(model_list)):
+    #         model = model_list[model_id]
+    #         origin_pred = predict(model, origin_input)
+    #         origin_pred_label = origin_pred.max(1)[1]
+    #         origin_pred = origin_pred.detach().cpu().numpy()
+    #         origin_pred_label = origin_pred_label.detach().cpu().numpy()
+    #         for batch_id in range(0, len(origin_input)):
+    #             result = AttributionResult(dataset, label_names, sample_id + batch_id,
+    #                                        origin_input[batch_id], truth_label[batch_id],
+    #                                        model_name_list[model_id], origin_pred[batch_id], origin_pred_label[batch_id],
+    #                                        features_lists[model_id].detach().cpu().numpy()[batch_id])
+    #             db[result.result_id] = result
+
+    evoked_feature_db = shelve.open('../dataset/{}_evoked_feature'.format(dataset))
+    if dataset == "CamCAN":
+        if mean_class == 0:
+            evoked_feature = evoked_feature_db["aud"]
+        else:
+            evoked_feature = evoked_feature_db["vis"]
+    else:
+        if mean_class == 0:
+            evoked_feature = evoked_feature_db["scramble"]
+        else:
+            evoked_feature = evoked_feature_db["face"]
+    evoked_feature = (evoked_feature - np.mean(evoked_feature)) / (np.std(evoked_feature))
 
     pred_list = []
     heatmap_channel_list = []
+    heatmap_channel_list.append(evoked_feature)
     for model_id in range(len(model_list)):
         model = model_list[model_id]
         pred = predict(model, data).detach().cpu().numpy()
@@ -131,6 +145,7 @@ for mean_class in [0, 1]:
         save_figure(fig, '../plot/heatmap4classes/', '{}_{}_{}_mean'.format(dataset, model_name_list[model_id], mean_class))
         for i in range(len(heatmap_channel_list)):
             cos_sim = cosine_similarity(heatmap_channel_list[i].reshape(1, -1), heatmap_channel.reshape(1, -1))
-            r2 = r2_score(pred_list[i], pred)
-            print(cos_sim, r2)
+            # r2 = r2_score(pred_list[i], pred)
+            # print(cos_sim, r2)
+            print(cos_sim)
         heatmap_channel_list.append(heatmap_channel)
