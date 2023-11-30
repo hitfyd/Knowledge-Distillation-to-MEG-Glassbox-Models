@@ -133,14 +133,14 @@ if __name__ == '__main__':
     save_figure(fig_scramble_evoked_average_joint, '../plot/evoked/', 'DecMeg2014_fig_scramble_evoked_average_joint')
     save_figure(fig_face_evoked_average_joint, '../plot/evoked/', 'DecMeg2014_fig_face_evoked_average_joint')
 
-    # scramble_times = np.arange(0.16, 0.28, 0.004)
-    # face_times = np.arange(0.16, 0.28, 0.004)
-    scramble_times = 0.240
-    face_times = 0.224
+    scramble_times = np.arange(0.16, 0.28, 0.004)
+    face_times = np.arange(0.16, 0.28, 0.004)
+    # scramble_times = 0.184
+    # face_times = 0.224
     cmap = 'Oranges'
 
-    scramble_evoked_peak_feature = scramble_evoked.data[:, 185]
-    face_evoked_peak_feature = face_evoked.data[:, 181]
+    scramble_evoked_peak_feature = scramble_evoked.data[:, 171]
+    face_evoked_peak_feature = face_evoked.data[:, 171]
     evoked_feature_db = shelve.open('../dataset/DecMeg2014_evoked_feature')
     evoked_feature_db["scramble"] = scramble_evoked_peak_feature
     evoked_feature_db["face"] = face_evoked_peak_feature
