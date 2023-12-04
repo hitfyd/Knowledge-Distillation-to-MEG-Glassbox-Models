@@ -131,11 +131,11 @@ for mean_class in [0, 1]:
         for sample_id in range(sample_num):
             result_id = "{}_{}_{}".format(dataset, sample_id, model_name_list[model_id])
             result = db[result_id]
-            if result.pred_label == result.truth_label == mean_class:  # 根据标签区分预测正确样本的模型平均特征归因
-                result_list.append(result)
-            # if result.pred_label == mean_class:   # 根据预测标签区分的模型平均特征归因（不分区是否预测正确）
+            # if result.pred_label == result.truth_label == mean_class:  # 根据标签区分预测正确样本的模型平均特征归因
             #     result_list.append(result)
-            # if result.truth_label == mean_class:   # 根据真是标签区分的模型平均特征归因（不分区是否预测正确）
+            if result.pred_label == mean_class:   # 根据预测标签区分的模型平均特征归因（不分区是否预测正确）
+                result_list.append(result)
+            # if result.truth_label == mean_class:   # 根据真实标签区分的模型平均特征归因（不分区是否预测正确）
             #     result_list.append(result)
             # if result.pred_label == result.truth_label:   # 所有预测正确样本的总体特征归因（不分区标签）
             #     result_list.append(result)

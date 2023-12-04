@@ -121,12 +121,17 @@ if __name__ == '__main__':
     vis_times = 0.136
     cmap = 'Oranges'
 
-    aud_evoked_peak_feature = aud_evoked_average.data[:, 53]
-    vis_evoked_peak_feature = vis_evoked_average.data[:, 54]
+    aud_evoked_peak_feature = aud_evoked_average.data[:, 53]         # 对应0.128s处的通道信号值
+    vis_evoked_peak_feature = vis_evoked_average.data[:, 54]         # 对应0.136s处的通道信号值
     evoked_feature_db = shelve.open('../dataset/CamCAN_evoked_feature')
     evoked_feature_db["aud"] = aud_evoked_peak_feature
     evoked_feature_db["vis"] = vis_evoked_peak_feature
     evoked_feature_db.close()
+
+    # fig_scramble_evoked_average = mne.viz.plot_evoked_topomap(aud_evoked_average, times='peaks', ch_type=ch_type,
+    #                                                           average=None, cmap=cmap, outlines='head')
+    # fig_scramble_evoked_average = mne.viz.plot_evoked_topomap(vis_evoked_average, times='peaks', ch_type=ch_type,
+    #                                                           average=None, cmap=cmap, outlines='head')
 
     # fig_aud_evoked_average = aud_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.02, cmap=cmap, sensors=False, ncols=4, nrows="auto")
     # fig_vis_evoked_average = vis_evoked_average.plot_topomap(times, ch_type=ch_type, average=0.02, cmap=cmap, sensors=False, ncols=4, nrows="auto")
