@@ -81,7 +81,7 @@ channel_db.close()
 batch_size = 64
 M = 32
 if dataset == 'DecMeg2014':
-    M = 16
+    batch_size = 32
 for mean_class in [0, 1]:
     class_index = origin_labels == mean_class
     data = origin_data[class_index]
@@ -143,9 +143,11 @@ for mean_class in [0, 1]:
 
         fig, heatmap_channel, _ = class_mean_plot(result_list, channels_info, top_channel_num=5)
         save_figure(fig, '../plot/heatmap4classes/', '{}_{}_{}_mean'.format(dataset, model_name_list[model_id], mean_class))
-        for i in range(len(heatmap_channel_list)):
-            cos_sim = cosine_similarity(heatmap_channel_list[i].reshape(1, -1), heatmap_channel.reshape(1, -1))
-            # r2 = r2_score(pred_list[i], pred)
-            # print(cos_sim, r2)
-            print(cos_sim)
-        heatmap_channel_list.append(heatmap_channel)
+        if len(heatmap_channel_list) < 5:
+            heatmap_channel_list.append(heatmap_channel)
+        else:
+            for i in range(len(heatmap_channel_list)):
+                cos_sim = cosine_similarity(heatmap_channel_list[i].reshape(1, -1), heatmap_channel.reshape(1, -1))
+                # r2 = r2_score(pred_list[i], pred)
+                # print(cos_sim, r2)
+                print(cos_sim)
