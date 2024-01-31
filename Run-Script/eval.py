@@ -1,4 +1,6 @@
 import argparse
+import os
+from collections import OrderedDict
 from glob import glob
 from statistics import mean, pstdev
 
@@ -55,9 +57,6 @@ if __name__ == "__main__":
         args.model, args.dataset, args.batch_size, args.pretrain_checkpoint
     val_loader = get_data_loader_from_dataset('../dataset/{}_test.npz'.format(dataset), batch_size)
     net, pretrain_model_path = model_dict[model_name]
-    if model_name == "sdt":
-        assert pretrain_checkpoint != ""
-        pretrain_model_path = pretrain_checkpoint
     if dataset == "CamCAN":
         channels, points, num_classes = 204, 100, 2
     elif dataset == "DecMeg2014":
@@ -65,15 +64,43 @@ if __name__ == "__main__":
     else:
         raise Exception
     model = net(channels=channels, points=points, num_classes=num_classes)
-    test_acc_l, test_f1_l = [], []
-    for pretrain_model_path_i in glob(pretrain_model_path + 'student_best_*'):
-        model.load_state_dict(load_checkpoint(pretrain_model_path_i))
+    if model_name == "sdt":
+        assert pretrain_checkpoint != ""
+        pretrain_model_path = pretrain_checkpoint
+        test_acc_l, precision_l, recall_l, test_f1_l = [], [], [], []
+        for pretrain_model_path_i in glob(pretrain_model_path + 'student_best_*'):
+            student_dict = load_checkpoint(pretrain_model_path_i)
+            model.load_state_dict(load_checkpoint(pretrain_model_path_i))
+        for pretrain_model_path_i in glob(pretrain_model_path + 'state_best_*'):
+            state_dict = load_checkpoint(pretrain_model_path_i)["model"]
+            student_dict = OrderedDict((key, value) for key, value in state_dict.items() if key in ['module.student.inner_nodes.0.weight', 'module.student.leaf_nodes.weight'])
+            model_distiller = Vanilla(model)
+            model_distiller = model_distiller.cuda()
+            model_distiller = torch.nn.DataParallel(model_distiller)
+            model_distiller.load_state_dict(student_dict)
+            test_acc, precision, recall, test_f1, _, _, _, _ = evaluate(val_loader, model_distiller)
+            print(test_acc, precision, recall, test_f1)
+            test_acc_l.append(test_acc * 100)
+            precision_l.append(precision * 100)
+            recall_l.append(recall * 100)
+            test_f1_l.append(test_f1)
+        print("best_acc(mean±std)\t{:.2f} ± {:.2f}\t{}".format(mean(test_acc_l), pstdev(test_acc_l), test_acc_l))
+        print("best_precision(mean±std)\t{:.2f} ± {:.2f}\t{}".format(mean(precision_l), pstdev(precision_l), precision_l))
+        print("best_recall(mean±std)\t{:.2f} ± {:.2f}\t{}".format(mean(recall_l), pstdev(recall_l), recall_l))
+        print("best_f1(mean±std)\t{:.4f} ± {:.4f}\t{}".format(mean(test_f1_l), pstdev(test_f1_l), test_f1_l))
+        print("best_f1(mean±std)\t{:.3f} ± {:.3f}\t{}".format(mean(test_f1_l), pstdev(test_f1_l), test_f1_l))
+        print("best_f1(mean±std)\t{:.2f} ± {:.2f}\t{}".format(mean(test_f1_l), pstdev(test_f1_l), test_f1_l))
+        with open(os.path.join(pretrain_model_path, "eval.txt"), "a") as writer:
+            writer.write("best_acc(mean±std)\t{:.2f} ± {:.2f}\t{}\n".format(mean(test_acc_l), pstdev(test_acc_l), test_acc_l))
+            writer.write("best_precision(mean±std)\t{:.2f} ± {:.2f}\t{}\n".format(mean(precision_l), pstdev(precision_l), precision_l))
+            writer.write("best_recall(mean±std)\t{:.2f} ± {:.2f}\t{}\n".format(mean(recall_l), pstdev(recall_l), recall_l))
+            writer.write("best_f1(mean±std)\t{:.4f} ± {:.4f}\t{}\n".format(mean(test_f1_l), pstdev(test_f1_l), test_f1_l))
+            writer.write("best_f1(mean±std)\t{:.3f} ± {:.3f}\t{}\n".format(mean(test_f1_l), pstdev(test_f1_l), test_f1_l))
+            writer.write("best_f1(mean±std)\t{:.2f} ± {:.2f}\t{}\n".format(mean(test_f1_l), pstdev(test_f1_l), test_f1_l))
+    else:
+        model.load_state_dict(load_checkpoint(pretrain_model_path))
         model_distiller = Vanilla(model)
         model_distiller = model_distiller.cuda()
         model_distiller = torch.nn.DataParallel(model_distiller)
         test_acc, precision, recall, test_f1, _, _, _, _ = evaluate(val_loader, model_distiller)
         print(test_acc, precision, recall, test_f1)
-        test_acc_l.append(test_acc)
-        test_f1_l.append(test_f1)
-    print("best_acc(mean±std)\t{:.4f} ± {:.4f}\t{}".format(mean(test_acc_l), pstdev(test_acc_l), test_acc_l))
-    print("best_f1(mean±std)\t{:.2f} ± {:.2f}\t{}".format(mean(test_f1_l), pstdev(test_f1_l), test_f1_l))
