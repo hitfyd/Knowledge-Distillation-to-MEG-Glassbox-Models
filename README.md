@@ -1,5 +1,9 @@
 # Knowledge-Distillation-to-MEG-Glassbox-Models
 
+## Published Research
+
+ "Magnetoencephalography Decoding Transfer Approach: From Deep Learning Models to Intrinsically Interpretable Models," in *IEEE Journal of Biomedical and Health Informatics*, https://doi.org/10.1109/JBHI.2024.3365051.
+
 ## Experimental Preparation
 
 ### Experimental Environment
