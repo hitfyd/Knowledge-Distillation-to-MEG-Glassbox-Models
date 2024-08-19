@@ -35,9 +35,9 @@ ray==3.0.0.dev0
 
 ### Dataset Preprocessing
 
-The CamCAN dataset can be downloaded from the Cambridge Centre for Ageing Neuroscience website at \url{https://camcan-archive.mrc-cbu.cam.ac.uk/dataaccess/}.
-The DecMeg2014 dataset is available at \url{https://www.kaggle.com/c/decoding-the-human-brain/data}.
-The pre-processed training and test set are provided in \url{https://drive.google.com/drive/folders/1d1xHb9bYQzoCcvlZ7mrFJvm570-MISvu}.
+The CamCAN dataset can be downloaded from the Cambridge Centre for Ageing Neuroscience website at https://camcan-archive.mrc-cbu.cam.ac.uk/dataaccess/.
+The DecMeg2014 dataset is available at https://www.kaggle.com/c/decoding-the-human-brain/data.
+The pre-processed training and test set are provided in https://drive.google.com/drive/folders/1d1xHb9bYQzoCcvlZ7mrFJvm570-MISvu.
 
 CamCAN Preprocessing Script:
 ```angular2html
