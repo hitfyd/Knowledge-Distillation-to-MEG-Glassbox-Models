@@ -1,0 +1,18 @@
+EXPERIMENT:
+  NAME: ""
+  TAG: "dtkd,hgrn,sdt"
+  PROJECT: "CamCAN_baselines"
+DATASET:
+  TYPE: "CamCAN"
+  CHANNELS: 204
+  POINTS: 100
+  NUM_CLASSES: 2
+DISTILLER:
+  TYPE: "DTKD"
+  TEACHER: "CamCAN_lfcnn"
+  STUDENT: "sdt"
+SOLVER:
+  BATCH_SIZE: 1024
+  EPOCHS: 100
+  LR: 0.003
+

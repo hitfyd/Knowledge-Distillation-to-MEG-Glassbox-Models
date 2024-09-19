@@ -1,3 +1,6 @@
+from .DTKD import DTKD
+from .NormKD import NormKD
+from .WTTM import WTTM
 from ._base import Vanilla
 from .KD import KD
 from .GKD import GKD
@@ -11,5 +14,8 @@ distiller_dict = {
     "GKD": GKD,
     "MSEKD": MSEKD,
     "DKD": DKD,
+    "NormKD": NormKD,
+    "WTTM": WTTM,
+    "DTKD": DTKD,
     "ShapleyFAKD": ShapleyFAKD,
 }
