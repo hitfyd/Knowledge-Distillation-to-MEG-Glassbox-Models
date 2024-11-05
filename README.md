@@ -19,6 +19,7 @@ pip install yacs
 pip install wandb
 pip install scikit-learn
 pip install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-3.0.0.dev0-cp311-cp311-manylinux2014_x86_64.whl
+pip install braindecode
 ```
 
 Major dependency packages:
